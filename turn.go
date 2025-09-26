@@ -96,6 +96,9 @@ func (t MoveTurnData) Execute(m *Map, p *Player) error {
 	}
 
 	ship := m.Ships[t.ShipID]
+	if ship == nil {
+		return fmt.Errorf("ship %v has been destroyed", t.ShipID)
+	}
 	if ship.PlayerID != p.ID {
 		return fmt.Errorf("ship %v does not belong to player %v", t.ShipID, p.ID)
 	}
@@ -135,7 +138,13 @@ func (t LoadTurnData) Execute(m *Map, p *Player) error {
 	}
 
 	source := m.Ships[t.SourceID]
+	if source == nil {
+		return fmt.Errorf("source ship %v has been destroyed", t.SourceID)
+	}
 	destination := m.Ships[t.DestinationID]
+	if destination == nil {
+		return fmt.Errorf("destination ship %v has been destroyed", t.DestinationID)
+	}
 
 	if source.PlayerID != p.ID {
 		return fmt.Errorf("source ship %v does not belong to player %v", t.SourceID, p.ID)
@@ -177,7 +186,13 @@ func (t SiphonTurnData) Execute(m *Map, p *Player) error {
 	}
 
 	source := m.Ships[t.SourceID]
+	if source == nil {
+		return fmt.Errorf("source ship %v has been destroyed", t.SourceID)
+	}
 	destination := m.Ships[t.DestinationID]
+	if destination == nil {
+		return fmt.Errorf("destination ship %v has been destroyed", t.DestinationID)
+	}
 
 	if source.PlayerID != p.ID {
 		return fmt.Errorf("source ship %v does not belong to player %v", t.SourceID, p.ID)
@@ -215,7 +230,13 @@ func (t ShootTurnData) Execute(m *Map, p *Player) error {
 	}
 
 	source := m.Ships[t.SourceID]
+	if source == nil {
+		return fmt.Errorf("source ship %v has been destroyed", t.SourceID)
+	}
 	destination := m.Ships[t.DestinationID]
+	if destination == nil {
+		return fmt.Errorf("destination ship %v has been destroyed", t.DestinationID)
+	}
 
 	if source.PlayerID != p.ID {
 		return fmt.Errorf("source ship %v does not belong to player %v", t.SourceID, p.ID)
