@@ -1,2 +1,4 @@
+github.com/aquilax/go-perlin v1.1.0 h1:Gg+3jQ24wT4Y5GI7TCRLmYarzUG0k+n/JATFqOimb7s=
+github.com/aquilax/go-perlin v1.1.0/go.mod h1:z9Rl7EM4BZY0Ikp2fEN1I5mKSOJ26HQpk0O2TBdN2HE=
 github.com/trojsten/ksp-proboj v0.0.0-20250926124504-c0c34cd30e8d h1:Pirxh9ta/vXjehHqaUVgCYhh0zz9DjwPMCBFmxj5MY0=
 github.com/trojsten/ksp-proboj v0.0.0-20250926124504-c0c34cd30e8d/go.mod h1:W2qcbpdKiJ82Oo1vytgT7uaICJJMfHrAJRUqldHM2W4=

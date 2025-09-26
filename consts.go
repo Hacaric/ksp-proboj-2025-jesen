@@ -3,25 +3,28 @@ package main
 import "math/rand"
 
 const (
-	Radius                 = 15000
-	MaxAsteroidSize        = 50
-	MinAsteroidSize        = MaxAsteroidSize / 2
-	AsteroidCount          = 500
-	WormholeCount          = 25
-	ShipMaxHealth          = 100
-	ShipStartFuel          = 100
-	PlayerStartFuel        = 1000
-	PlayerStartRock        = 1000
-	ShipMovementFree       = 1.0
-	ShipMovementMultiplier = 1.0
-	ShipMovementMaxSize    = 10000
-	ShipTransferDistance   = 20
-	ShipShootDistance      = 100
-	ShipShootDamage        = 25
-	ShipRepairDistance     = 50
-	ShipRepairAmount       = 30
-	MaterialToSurfaceRatio = 10.0
-	AsteroidSpawnOffset    = 5.0
+	Radius                          = 15000
+	MaxAsteroidSize                 = 50
+	MinAsteroidSize                 = MaxAsteroidSize / 2
+	AsteroidCount                   = 500
+	WormholeCount                   = 25
+	ShipMaxHealth                   = 100
+	ShipStartFuel                   = 100
+	PlayerStartFuel                 = 1000
+	PlayerStartRock                 = 1000
+	ShipMovementFree                = 1.0
+	ShipMovementMultiplier          = 1.0
+	ShipMovementMaxSize             = 10000
+	ShipTransferDistance            = 20
+	ShipShootDistance               = 100
+	ShipShootDamage                 = 25
+	ShipRepairDistance              = 50
+	ShipRepairAmount                = 30
+	MaterialToSurfaceRatio          = 10.0
+	AsteroidSpawnOffset             = 5.0
+	GlobalAsteroidMovementScale     = 2.0
+	IndividualAsteroidMovementScale = 1.0
+	PerlinNoiseScale                = 0.01
 )
 
 func ShipRockPrice(t ShipType) int {

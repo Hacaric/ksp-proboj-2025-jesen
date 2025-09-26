@@ -15,7 +15,6 @@ const (
 type Asteroid struct {
 	ID       int          `json:"id"`
 	Position Position     `json:"position"`
-	Vector   Position     `json:"vector"`
 	Type     AsteroidType `json:"type"`
 	Size     float64      `json:"size"`
 }
@@ -51,4 +50,28 @@ func NewAsteroidFromShip(m *Map, ship *Ship, asteroidType AsteroidType) *Asteroi
 
 	m.Asteroids = append(m.Asteroids, a)
 	return a
+}
+
+func UpdateAsteroidPositions(m *Map) {
+	globalX := m.perlin.Noise2D(float64(m.Round)*PerlinNoiseScale, 0) * GlobalAsteroidMovementScale
+	globalY := m.perlin.Noise2D(0, float64(m.Round)*PerlinNoiseScale) * GlobalAsteroidMovementScale
+	globalSteering := Position{X: globalX, Y: globalY}
+
+	for _, asteroid := range m.Asteroids {
+		individualX := m.perlin.Noise2D(
+			asteroid.Position.X*PerlinNoiseScale,
+			asteroid.Position.Y*PerlinNoiseScale,
+		) * IndividualAsteroidMovementScale
+
+		individualY := m.perlin.Noise2D(
+			asteroid.Position.X*PerlinNoiseScale+1000,
+			asteroid.Position.Y*PerlinNoiseScale+1000,
+		) * IndividualAsteroidMovementScale
+
+		individualSteering := Position{X: individualX, Y: individualY}
+
+		// Apply both steering vectors and update position
+		totalMovement := globalSteering.Add(individualSteering)
+		asteroid.Position = asteroid.Position.Add(totalMovement)
+	}
 }

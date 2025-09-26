@@ -1,6 +1,11 @@
 package main
 
-import "github.com/trojsten/ksp-proboj/client"
+import (
+	"math/rand"
+
+	"github.com/aquilax/go-perlin"
+	"github.com/trojsten/ksp-proboj/client"
+)
 
 type Map struct {
 	Radius    float64        `json:"radius"`
@@ -10,10 +15,12 @@ type Map struct {
 	Players   []*Player      `json:"players"`
 	runner    *client.Runner `json:"-"`
 	Round     int            `json:"round"`
+	perlin    *perlin.Perlin `json:"-"`
 }
 
 func NewMap() *Map {
 	m := &Map{Radius: Radius}
+	m.perlin = perlin.NewPerlin(2, 2, 3, rand.Int63())
 
 	for range AsteroidCount {
 		NewAsteroid(m)
@@ -31,5 +38,6 @@ func (m *Map) ShouldContinue() bool {
 }
 
 func (m *Map) Tick() {
+	UpdateAsteroidPositions(m)
 	m.Round++
 }
