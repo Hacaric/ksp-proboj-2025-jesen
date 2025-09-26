@@ -22,6 +22,10 @@ func (p Position) Distance(r Position) float64 {
 	return math.Sqrt((p.X-r.X)*(p.X-r.X) + (p.Y-r.Y)*(p.Y-r.Y))
 }
 
+func (p Position) Size() float64 {
+	return p.Distance(Position{})
+}
+
 func RandomPosition(m *Map) Position {
 	return Position{
 		rand.Float64()*m.Radius*2 - m.Radius,
