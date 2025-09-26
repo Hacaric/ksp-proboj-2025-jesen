@@ -30,6 +30,14 @@ func ParseTurnData(container TurnContainer) (Turn, error) {
 		var turn MoveTurnData
 		err := json.Unmarshal(container.Data, &turn)
 		return turn, err
+	case LoadTurn:
+		var turn LoadTurnData
+		err := json.Unmarshal(container.Data, &turn)
+		return turn, err
+	case SiphonTurn:
+		var turn SiphonTurnData
+		err := json.Unmarshal(container.Data, &turn)
+		return turn, err
 	}
 
 	return nil, fmt.Errorf("unknown turn type: %v", container.Type)
@@ -101,6 +109,90 @@ func (t MoveTurnData) Execute(m *Map, p *Player) error {
 
 	ship.Vector = ship.Vector.Add(t.Vector)
 	ship.Fuel -= fuelCost
+
+	return nil
+}
+
+type LoadTurnData struct {
+	SourceID      int `json:"source_id"`
+	DestinationID int `json:"destination_id"`
+	Amount        int `json:"amount"`
+}
+
+func (t LoadTurnData) Execute(m *Map, p *Player) error {
+	if t.SourceID < 0 || t.SourceID >= len(m.Ships) {
+		return fmt.Errorf("invalid source ship id: %v", t.SourceID)
+	}
+	if t.DestinationID < 0 || t.DestinationID >= len(m.Ships) {
+		return fmt.Errorf("invalid destination ship id: %v", t.DestinationID)
+	}
+	if t.Amount <= 0 {
+		return fmt.Errorf("amount must be positive: %v", t.Amount)
+	}
+
+	source := m.Ships[t.SourceID]
+	destination := m.Ships[t.DestinationID]
+
+	if source.PlayerID != p.ID {
+		return fmt.Errorf("source ship %v does not belong to player %v", t.SourceID, p.ID)
+	}
+	if destination.PlayerID != p.ID {
+		return fmt.Errorf("destination ship %v does not belong to player %v", t.DestinationID, p.ID)
+	}
+
+	distance := source.Position.Distance(destination.Position)
+	if distance > ShipTransferDistance {
+		return fmt.Errorf("ships too far apart: %v > %v", distance, ShipTransferDistance)
+	}
+
+	if source.Rock < t.Amount {
+		return fmt.Errorf("insufficient rocks in source ship: needed %v, has %v", t.Amount, source.Rock)
+	}
+
+	source.Rock -= t.Amount
+	destination.Rock += t.Amount
+
+	return nil
+}
+
+type SiphonTurnData struct {
+	SourceID      int `json:"source_id"`
+	DestinationID int `json:"destination_id"`
+	Amount        int `json:"amount"`
+}
+
+func (t SiphonTurnData) Execute(m *Map, p *Player) error {
+	if t.SourceID < 0 || t.SourceID >= len(m.Ships) {
+		return fmt.Errorf("invalid source ship id: %v", t.SourceID)
+	}
+	if t.DestinationID < 0 || t.DestinationID >= len(m.Ships) {
+		return fmt.Errorf("invalid destination ship id: %v", t.DestinationID)
+	}
+	if t.Amount <= 0 {
+		return fmt.Errorf("amount must be positive: %v", t.Amount)
+	}
+
+	source := m.Ships[t.SourceID]
+	destination := m.Ships[t.DestinationID]
+
+	if source.PlayerID != p.ID {
+		return fmt.Errorf("source ship %v does not belong to player %v", t.SourceID, p.ID)
+	}
+	if destination.PlayerID != p.ID {
+		return fmt.Errorf("destination ship %v does not belong to player %v", t.DestinationID, p.ID)
+	}
+
+	distance := source.Position.Distance(destination.Position)
+	if distance > ShipTransferDistance {
+		return fmt.Errorf("ships too far apart: %v > %v", distance, ShipTransferDistance)
+	}
+
+	if int(source.Fuel) < t.Amount {
+		return fmt.Errorf("insufficient fuel in source ship: needed %v, has %v", t.Amount, int(source.Fuel))
+	}
+
+	source.Fuel -= float64(t.Amount)
+	destination.Fuel += float64(t.Amount)
 
 	return nil
 }

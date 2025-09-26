@@ -46,13 +46,13 @@ func GameTick(m *Map) {
 
 		m.runner.Log(fmt.Sprintf("executing turns for %v", player.Name))
 		ExecuteTurns(m, player, turns)
-		MovePlayerShips(m, player)
+		TickPlayerShips(m, player)
 	}
 
 	m.Tick()
 }
 
-func MovePlayerShips(m *Map, p *Player) {
+func TickPlayerShips(m *Map, p *Player) {
 	for _, ship := range m.Ships {
 		if ship.PlayerID == p.ID {
 			ship.Position = ship.Position.Add(ship.Vector)

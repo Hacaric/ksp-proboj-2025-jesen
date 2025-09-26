@@ -19,7 +19,7 @@ type Ship struct {
 	Health   int      `json:"health"`
 	Fuel     float64  `json:"fuel"`
 	Type     ShipType `json:"type"`
-	Cargo    int      `json:"cargo"`
+	Rock     int      `json:"rock"`
 }
 
 func NewShip(m *Map, p *Player, shipType ShipType) *Ship {

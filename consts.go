@@ -15,6 +15,7 @@ const (
 	ShipMovementFree       = 1.0
 	ShipMovementMultiplier = 1.0
 	ShipMovementMaxSize    = 10000
+	ShipTransferDistance   = 20
 )
 
 func ShipRockPrice(t ShipType) int {
