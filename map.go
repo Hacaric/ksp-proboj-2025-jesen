@@ -8,14 +8,15 @@ import (
 )
 
 type Map struct {
-	Radius    float64        `json:"radius"`
-	Ships     []*Ship        `json:"ships"`
-	Asteroids []*Asteroid    `json:"asteroids"`
-	Wormholes []*Wormhole    `json:"wormholes"`
-	Players   []*Player      `json:"players"`
-	runner    *client.Runner `json:"-"`
-	Round     int            `json:"round"`
-	perlin    *perlin.Perlin `json:"-"`
+	Radius    float64              `json:"radius"`
+	Ships     []*Ship              `json:"ships"`
+	Asteroids []*Asteroid          `json:"asteroids"`
+	Wormholes []*Wormhole          `json:"wormholes"`
+	Players   []*Player            `json:"players"`
+	runner    *client.Runner       `json:"-"`
+	Round     int                  `json:"round"`
+	perlin    *perlin.Perlin       `json:"-"`
+	UsedShips map[int]map[int]bool `json:"-"` // playerID -> shipID -> hasBeenUsed
 }
 
 func NewMap() *Map {

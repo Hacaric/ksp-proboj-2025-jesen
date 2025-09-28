@@ -52,6 +52,19 @@ func ParseTurnData(container TurnContainer) (Turn, error) {
 	return nil, fmt.Errorf("unknown turn type: %v", container.Type)
 }
 
+func useShip(m *Map, p *Player, shipID int) error {
+	if m.UsedShips[p.ID] == nil {
+		m.UsedShips[p.ID] = make(map[int]bool)
+	}
+
+	if m.UsedShips[p.ID][shipID] {
+		return fmt.Errorf("ship %v has already been used by player %v this round", shipID, p.ID)
+	}
+
+	m.UsedShips[p.ID][shipID] = true
+	return nil
+}
+
 func ExecuteTurns(m *Map, p *Player, turns []TurnContainer) {
 	for _, container := range turns {
 		turn, err := ParseTurnData(container)
@@ -108,6 +121,11 @@ func (t MoveTurnData) Execute(m *Map, p *Player) error {
 		return fmt.Errorf("ship %v does not belong to player %v", t.ShipID, p.ID)
 	}
 
+	err := useShip(m, p, t.ShipID)
+	if err != nil {
+		return err
+	}
+
 	if t.Vector.Size() > ShipMovementMaxSize {
 		scale := ShipMovementMaxSize / t.Vector.Size()
 		t.Vector.X *= scale
@@ -158,6 +176,11 @@ func (t LoadTurnData) Execute(m *Map, p *Player) error {
 		return fmt.Errorf("destination ship %v does not belong to player %v", t.DestinationID, p.ID)
 	}
 
+	err := useShip(m, p, t.SourceID)
+	if err != nil {
+		return err
+	}
+
 	distance := source.Position.Distance(destination.Position)
 	if distance > ShipTransferDistance {
 		return fmt.Errorf("ships too far apart: %v > %v", distance, ShipTransferDistance)
@@ -188,6 +211,10 @@ func (t SiphonTurnData) Execute(m *Map, p *Player) error {
 	}
 	if t.Amount <= 0 {
 		return fmt.Errorf("amount must be positive: %v", t.Amount)
+	}
+	err := useShip(m, p, t.SourceID)
+	if err != nil {
+		return err
 	}
 
 	source := m.Ships[t.SourceID]
@@ -232,6 +259,10 @@ func (t ShootTurnData) Execute(m *Map, p *Player) error {
 	}
 	if t.DestinationID < 0 || t.DestinationID >= len(m.Ships) {
 		return fmt.Errorf("invalid destination ship id: %v", t.DestinationID)
+	}
+	err := useShip(m, p, t.SourceID)
+	if err != nil {
+		return err
 	}
 
 	source := m.Ships[t.SourceID]
@@ -291,6 +322,10 @@ func (t RepairTurnData) Execute(m *Map, p *Player) error {
 	}
 	if ship.PlayerID != p.ID {
 		return fmt.Errorf("ship %v does not belong to player %v", t.ShipID, p.ID)
+	}
+	err := useShip(m, p, t.ShipID)
+	if err != nil {
+		return err
 	}
 
 	distance := ship.Position.Distance(p.MotherShip.Position)

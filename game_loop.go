@@ -17,6 +17,8 @@ func GameStateFor(m *Map, p *Player) string {
 }
 
 func GameTick(m *Map) {
+	m.UsedShips = make(map[int]map[int]bool)
+
 	for _, player := range m.Players {
 		if !player.Alive {
 			continue
