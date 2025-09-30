@@ -41,3 +41,15 @@ func RandomOffsetPosition(original Position, maxOffset float64) Position {
 		original.Y + distance*math.Sin(angle),
 	}
 }
+
+func (p Position) Scale(factor float64) Position {
+	return Position{p.X * factor, p.Y * factor}
+}
+
+func (p Position) Normalize() Position {
+	size := p.Size()
+	if size == 0 {
+		return Position{0, 0}
+	}
+	return Position{p.X / size, p.Y / size}
+}

@@ -58,6 +58,7 @@ func TickPlayerShips(m *Map, p *Player) {
 	for _, ship := range m.Ships {
 		if ship.PlayerID == p.ID {
 			ship.Position = ship.Position.Add(ship.Vector)
+			CheckShipWormholeTeleportation(m, ship)
 		}
 	}
 }

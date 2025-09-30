@@ -25,6 +25,8 @@ const (
 	GlobalAsteroidMovementScale     = 2.0                 // Global scale factor for asteroid movement
 	IndividualAsteroidMovementScale = 1.0                 // Individual asteroid movement scale factor
 	PerlinNoiseScale                = 0.01                // Scale factor for Perlin noise generation
+	WormholeRadius                  = 5                   // Radius within which ships get teleported by wormholes
+	WormholeTeleportDistance        = 10                  // Minimum distance from target wormhole (2x radius) to prevent teleport loops
 )
 
 func ShipRockPrice(t ShipType) int {
