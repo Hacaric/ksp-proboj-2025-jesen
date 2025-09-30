@@ -102,14 +102,14 @@ func ConquerAsteroid(m *Map, ship *Ship, asteroid *Asteroid) {
 	totalSurface := asteroid.Size * asteroid.Size * math.Pi
 
 	if asteroid.OwnerID == ship.PlayerID {
-		asteroid.Surface = min(asteroid.Surface+ShipConqueringRate, totalSurface)
+		asteroid.OwnedSurface = min(asteroid.OwnedSurface+ShipConqueringRate, totalSurface)
 	} else {
-		asteroid.Surface = max(asteroid.Surface-ShipConqueringRate, 0)
+		asteroid.OwnedSurface = max(asteroid.OwnedSurface-ShipConqueringRate, 0)
 
-		if asteroid.Surface == 0 {
+		if asteroid.OwnedSurface == 0 {
 			asteroid.OwnerID = ship.PlayerID
 		}
 	}
 
-	asteroid.Surface = min(asteroid.Surface, totalSurface)
+	asteroid.OwnedSurface = min(asteroid.OwnedSurface, totalSurface)
 }
