@@ -13,18 +13,22 @@ const (
 )
 
 type Asteroid struct {
-	ID       int          `json:"id"`
-	Position Position     `json:"position"`
-	Type     AsteroidType `json:"type"`
-	Size     float64      `json:"size"`
+	ID           int          `json:"id"`
+	Position     Position     `json:"position"`
+	Type         AsteroidType `json:"type"`
+	Size         float64      `json:"size"`
+	OwnerID      int          `json:"owner_id"`
+	OwnedSurface float64      `json:"surface"`
 }
 
 func NewAsteroid(m *Map) *Asteroid {
 	a := &Asteroid{
-		ID:       len(m.Asteroids),
-		Position: RandomPosition(m),
-		Type:     AsteroidType(rand.Intn(2)),
-		Size:     RandomFloat(MinAsteroidSize, MaxAsteroidSize),
+		ID:           len(m.Asteroids),
+		Position:     RandomPosition(m),
+		Type:         AsteroidType(rand.Intn(2)),
+		Size:         RandomFloat(MinAsteroidSize, MaxAsteroidSize),
+		OwnerID:      -1,
+		OwnedSurface: 0,
 	}
 
 	m.Asteroids = append(m.Asteroids, a)
@@ -42,10 +46,12 @@ func NewAsteroidFromShip(m *Map, ship *Ship, asteroidType AsteroidType) *Asteroi
 	size := math.Sqrt(materialAmount / MaterialToSurfaceRatio / math.Pi)
 
 	a := &Asteroid{
-		ID:       len(m.Asteroids),
-		Position: RandomOffsetPosition(ship.Position, AsteroidSpawnOffset),
-		Type:     asteroidType,
-		Size:     size,
+		ID:           len(m.Asteroids),
+		Position:     RandomOffsetPosition(ship.Position, AsteroidSpawnOffset),
+		Type:         asteroidType,
+		Size:         size,
+		OwnerID:      ship.PlayerID,
+		OwnedSurface: size * size * math.Pi,
 	}
 
 	m.Asteroids = append(m.Asteroids, a)
@@ -99,5 +105,9 @@ func MineAsteroid(m *Map, ship *Ship, asteroid *Asteroid) {
 		m.Asteroids[asteroid.ID] = nil
 	} else {
 		asteroid.Size = math.Sqrt(newMaterial / MaterialToSurfaceRatio / math.Pi)
+		if asteroid.OwnedSurface > 0 {
+			surfaceRatio := asteroid.OwnedSurface / (currentMaterial / MaterialToSurfaceRatio)
+			asteroid.OwnedSurface = newMaterial / MaterialToSurfaceRatio * surfaceRatio
+		}
 	}
 }

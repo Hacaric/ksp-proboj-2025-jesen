@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 
 	"github.com/trojsten/ksp-proboj/client"
 )
@@ -65,6 +66,7 @@ func TickPlayerShips(m *Map, p *Player) {
 		if ship.Type == DrillShip || ship.Type == SuckerShip {
 			HandleShipMining(m, ship)
 		}
+		HandleShipConquering(m, ship)
 	}
 }
 
@@ -80,4 +82,34 @@ func HandleShipMining(m *Map, ship *Ship) {
 			break
 		}
 	}
+}
+
+func HandleShipConquering(m *Map, ship *Ship) {
+	for _, asteroid := range m.Asteroids {
+		if asteroid == nil {
+			continue
+		}
+
+		distance := ship.Position.Distance(asteroid.Position)
+		if distance <= ShipConqueringDistance {
+			ConquerAsteroid(m, ship, asteroid)
+			break
+		}
+	}
+}
+
+func ConquerAsteroid(m *Map, ship *Ship, asteroid *Asteroid) {
+	totalSurface := asteroid.Size * asteroid.Size * math.Pi
+
+	if asteroid.OwnerID == ship.PlayerID {
+		asteroid.Surface = min(asteroid.Surface+ShipConqueringRate, totalSurface)
+	} else {
+		asteroid.Surface = max(asteroid.Surface-ShipConqueringRate, 0)
+
+		if asteroid.Surface == 0 {
+			asteroid.OwnerID = ship.PlayerID
+		}
+	}
+
+	asteroid.Surface = min(asteroid.Surface, totalSurface)
 }

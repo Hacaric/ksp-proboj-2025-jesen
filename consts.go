@@ -29,6 +29,8 @@ const (
 	WormholeTeleportDistance        = 10                  // Minimum distance from target wormhole (2x radius) to prevent teleport loops
 	ShipMiningDistance              = 10                  // Maximum distance for mining operations
 	ShipMiningAmount                = 5                   // Units mined per tick
+	ShipConqueringDistance          = 15                  // Maximum distance for conquering operations
+	ShipConqueringRate              = 2                   // Surface units conquered/lost per tick
 )
 
 func ShipRockPrice(t ShipType) int {
