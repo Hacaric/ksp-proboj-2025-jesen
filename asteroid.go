@@ -58,6 +58,10 @@ func UpdateAsteroidPositions(m *Map) {
 	globalSteering := Position{X: globalX, Y: globalY}
 
 	for _, asteroid := range m.Asteroids {
+		if asteroid == nil {
+			continue
+		}
+
 		individualX := m.perlin.Noise2D(
 			asteroid.Position.X*PerlinNoiseScale,
 			asteroid.Position.Y*PerlinNoiseScale,
@@ -73,5 +77,27 @@ func UpdateAsteroidPositions(m *Map) {
 		// Apply both steering vectors and update position
 		totalMovement := globalSteering.Add(individualSteering)
 		asteroid.Position = asteroid.Position.Add(totalMovement)
+	}
+}
+
+func MineAsteroid(m *Map, ship *Ship, asteroid *Asteroid) {
+	materialToRemove := float64(ShipMiningAmount)
+	currentMaterial := asteroid.Size * asteroid.Size * math.Pi * MaterialToSurfaceRatio
+
+	if materialToRemove > currentMaterial {
+		materialToRemove = currentMaterial
+	}
+
+	if asteroid.Type == FuelAsteroid {
+		ship.Fuel += materialToRemove
+	} else {
+		ship.Rock += int(materialToRemove)
+	}
+
+	newMaterial := currentMaterial - materialToRemove
+	if newMaterial <= 0 {
+		m.Asteroids[asteroid.ID] = nil
+	} else {
+		asteroid.Size = math.Sqrt(newMaterial / MaterialToSurfaceRatio / math.Pi)
 	}
 }

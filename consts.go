@@ -27,6 +27,8 @@ const (
 	PerlinNoiseScale                = 0.01                // Scale factor for Perlin noise generation
 	WormholeRadius                  = 5                   // Radius within which ships get teleported by wormholes
 	WormholeTeleportDistance        = 10                  // Minimum distance from target wormhole (2x radius) to prevent teleport loops
+	ShipMiningDistance              = 10                  // Maximum distance for mining operations
+	ShipMiningAmount                = 5                   // Units mined per tick
 )
 
 func ShipRockPrice(t ShipType) int {

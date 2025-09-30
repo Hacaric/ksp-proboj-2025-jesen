@@ -56,9 +56,28 @@ func GameTick(m *Map) {
 
 func TickPlayerShips(m *Map, p *Player) {
 	for _, ship := range m.Ships {
-		if ship.PlayerID == p.ID {
-			ship.Position = ship.Position.Add(ship.Vector)
-			CheckShipWormholeTeleportation(m, ship)
+		if ship == nil || ship.PlayerID != p.ID {
+			continue
+		}
+
+		ship.Position = ship.Position.Add(ship.Vector)
+		CheckShipWormholeTeleportation(m, ship)
+		if ship.Type == DrillShip || ship.Type == SuckerShip {
+			HandleShipMining(m, ship)
+		}
+	}
+}
+
+func HandleShipMining(m *Map, ship *Ship) {
+	for _, asteroid := range m.Asteroids {
+		if asteroid == nil {
+			continue
+		}
+
+		distance := ship.Position.Distance(asteroid.Position)
+		if distance <= ShipMiningDistance {
+			MineAsteroid(m, ship, asteroid)
+			break
 		}
 	}
 }
