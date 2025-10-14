@@ -133,12 +133,21 @@ func (t MoveTurnData) Execute(m *Map, p *Player) error {
 	}
 
 	fuelCost := ShipMovementPrice(t.Vector, ship.Type)
-	if ship.Fuel < fuelCost {
-		return fmt.Errorf("insufficient fuel for ship: needed %v, has %v", fuelCost, ship.Fuel)
+
+	// Mothership uses player fuel, other ships use their own fuel
+	if ship.Type == MotherShip {
+		if p.FuelAmount < int(fuelCost) {
+			return fmt.Errorf("insufficient fuel for mothership: needed %v, has %v", fuelCost, p.FuelAmount)
+		}
+		p.FuelAmount -= int(fuelCost)
+	} else {
+		if ship.Fuel < fuelCost {
+			return fmt.Errorf("insufficient fuel for ship: needed %v, has %v", fuelCost, ship.Fuel)
+		}
+		ship.Fuel -= fuelCost
 	}
 
 	ship.Vector = ship.Vector.Add(t.Vector)
-	ship.Fuel -= fuelCost
 
 	return nil
 }
@@ -332,6 +341,14 @@ func (t RepairTurnData) Execute(m *Map, p *Player) error {
 	if distance > ShipRepairDistance {
 		return fmt.Errorf("ship too far from mothership for repair: %v > %v", distance, ShipRepairDistance)
 	}
+
+	// Check if player has enough rock for repair
+	if p.RockAmount < ShipRepairRockCost {
+		return fmt.Errorf("insufficient rock for repair: needed %v, has %v", ShipRepairRockCost, p.RockAmount)
+	}
+
+	// Deduct rock cost
+	p.RockAmount -= ShipRepairRockCost
 
 	ship.Health += ShipRepairAmount
 	if ship.Health > ShipMaxHealth {

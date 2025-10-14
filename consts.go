@@ -20,6 +20,7 @@ const (
 	ShipShootDamage                 = 25                  // Damage dealt by ship weapons
 	ShipRepairDistance              = 50                  // Maximum distance for ship repair operations
 	ShipRepairAmount                = 30                  // Health points restored by repair
+	ShipRepairRockCost              = 1                   // Rock cost per repair operation
 	MaterialToSurfaceRatio          = 10.0                // Ratio of material to surface area for asteroids
 	AsteroidSpawnOffset             = 5.0                 // Offset distance for asteroid spawning after ship death
 	GlobalAsteroidMovementScale     = 2.0                 // Global scale factor for asteroid movement
