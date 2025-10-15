@@ -16,7 +16,6 @@ class TimelineManager {
         const playPauseBtn = document.getElementById('playPauseBtn');
         const frameSlider = document.getElementById('frameSlider');
         const speedSelect = document.getElementById('speedSelect');
-        const interpolationToggle = document.getElementById('interpolationToggle');
 
         if (playPauseBtn) {
             playPauseBtn.addEventListener('click', () => this.togglePlayPause());
@@ -28,10 +27,6 @@ class TimelineManager {
 
         if (speedSelect) {
             speedSelect.addEventListener('change', (e) => this.onSpeedChange(e));
-        }
-
-        if (interpolationToggle) {
-            interpolationToggle.addEventListener('change', (e) => this.onInterpolationToggle(e));
         }
 
         // Initialize play button state
@@ -78,9 +73,6 @@ class TimelineManager {
             clearInterval(this.playInterval);
             this.playInterval = null;
         }
-
-        // Stop interpolation progress but preserve current frame
-        this.dataManager.stopInterpolation();
     }
 
     updatePlayPauseUI() {
@@ -122,11 +114,7 @@ class TimelineManager {
         }
     }
 
-    onInterpolationToggle(e) {
-        const enabled = e.target.checked;
-        this.dataManager.setInterpolationEnabled(enabled);
-    }
-
+    
     // Simple frame advancement without interpolation during playback
     advanceFrame() {
         const now = performance.now();
@@ -153,7 +141,7 @@ class TimelineManager {
     nextFrame() {
         const currentFrame = this.dataManager.getCurrentFrame();
         if (currentFrame < this.dataManager.getTotalFrames() - 1) {
-            this.dataManager.startInterpolation(currentFrame + 1);
+            this.dataManager.setCurrentFrame(currentFrame + 1);
             return true;
         }
         return false;
@@ -162,23 +150,23 @@ class TimelineManager {
     previousFrame() {
         const currentFrame = this.dataManager.getCurrentFrame();
         if (currentFrame > 0) {
-            this.dataManager.startInterpolation(currentFrame - 1);
+            this.dataManager.setCurrentFrame(currentFrame - 1);
             return true;
         }
         return false;
     }
 
     firstFrame() {
-        this.dataManager.startInterpolation(0);
+        this.dataManager.setCurrentFrame(0);
     }
 
     lastFrame() {
         const totalFrames = this.dataManager.getTotalFrames();
-        this.dataManager.startInterpolation(totalFrames - 1);
+        this.dataManager.setCurrentFrame(totalFrames - 1);
     }
 
     setFrame(frame) {
-        this.dataManager.startInterpolation(frame);
+        this.dataManager.setCurrentFrame(frame);
     }
 
     getCurrentFrame() {

@@ -25,11 +25,6 @@ class SpaceGameObserver {
     animate() {
         this.camera.update();
 
-        // Update interpolation if not playing (timeline manager handles it during playback)
-        if (!this.timelineManager.isPlaying) {
-            this.dataManager.updateInterpolation();
-        }
-
         this.renderer.gameData = this.dataManager.getGameData();
         this.renderer.selectedEntity = this.dataManager.getInterpolatedSelectedEntity();
         this.renderer.render();

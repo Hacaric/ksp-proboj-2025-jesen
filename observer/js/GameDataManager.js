@@ -4,10 +4,6 @@ class GameDataManager {
         this.gameStates = [];
         this.currentFrame = 0;
         this.selectedEntity = null;
-        this.interpolationEnabled = true;
-        this.interpolationProgress = 0;
-        this.targetFrame = 0;
-        this.lastFrameTime = 0;
     }
 
     async loadGameData() {
@@ -15,8 +11,6 @@ class GameDataManager {
         this.gameStates = [];
         this.currentFrame = 0;
         this.selectedEntity = null;
-        this.interpolationProgress = 0;
-        this.targetFrame = 0;
 
         console.log('GameDataManager initialized - waiting for file upload');
     }
@@ -26,8 +20,6 @@ class GameDataManager {
         this.gameStates = gameStates;
         this.currentFrame = 0;
         this.selectedEntity = null;
-        this.interpolationProgress = 0;
-        this.targetFrame = 0;
 
         console.log(`Loaded ${this.gameStates.length} game states from uploaded file`);
 
@@ -235,12 +227,12 @@ class GameDataManager {
         return this.selectedEntity;
     }
 
-    // Get interpolated version of selected entity for smooth selection rendering
+    // Get selected entity for rendering
     getInterpolatedSelectedEntity() {
         if (!this.selectedEntity) return null;
 
-        // Get the current game data (interpolated if interpolation is enabled)
-        const gameData = this.getGameData();
+        // Get the current game data
+        const gameData = this.getCurrentGameData();
         if (!gameData) return null;
 
         const { type, id } = this.selectedEntity;
@@ -253,168 +245,6 @@ class GameDataManager {
     }
 
     getGameData() {
-        if (this.interpolationEnabled && this.interpolationProgress > 0 && this.interpolationProgress < 1) {
-            return this.getInterpolatedGameData();
-        }
         return this.getCurrentGameData();
-    }
-
-    // Light interpolation between frames
-    getInterpolatedGameData() {
-        const currentFrame = this.getCurrentGameData();
-        const targetFrame = this.gameStates[this.targetFrame];
-
-        if (!currentFrame || !targetFrame || this.interpolationProgress <= 0) {
-            return currentFrame;
-        }
-
-        const t = this.interpolationProgress;
-        const interpolated = JSON.parse(JSON.stringify(currentFrame));
-
-        // Interpolate ships
-        interpolated.ships = this.interpolateEntities(currentFrame.ships, targetFrame.ships, t);
-
-        // Interpolate asteroids
-        interpolated.asteroids = this.interpolateEntities(currentFrame.asteroids, targetFrame.asteroids, t);
-
-        // Wormholes don't move, but we'll include them for consistency
-        interpolated.wormholes = currentFrame.wormholes;
-
-        // Players data doesn't interpolate (discrete updates)
-        interpolated.players = currentFrame.players;
-
-        return interpolated;
-    }
-
-    interpolateEntities(currentEntities, targetEntities, t) {
-        const result = [];
-
-        // Filter out null entities and create maps for efficient lookup
-        const validCurrentEntities = currentEntities.filter(e => e !== null);
-        const validTargetEntities = targetEntities.filter(e => e !== null);
-
-        const currentMap = new Map(validCurrentEntities.map(e => [e.id, e]));
-        const targetMap = new Map(validTargetEntities.map(e => [e.id, e]));
-
-        const allIds = new Set([...currentMap.keys(), ...targetMap.keys()]);
-
-        allIds.forEach(id => {
-            const current = currentMap.get(id);
-            const target = targetMap.get(id);
-
-            if (current && target) {
-                // Entity exists in both frames - interpolate
-                result.push(this.interpolateEntity(current, target, t));
-            } else if (current && t < 0.5) {
-                // Entity being removed - fade out
-                result.push({...current, _fading: true, _fadeAlpha: 1 - (t * 2)});
-            } else if (target && t >= 0.5) {
-                // Entity being added - fade in
-                result.push({...target, _fading: true, _fadeAlpha: (t - 0.5) * 2});
-            }
-            // Entity not visible at this interpolation point
-        });
-
-        return result;
-    }
-
-    interpolateEntity(current, target, t) {
-        const interpolated = {...current};
-
-        // Interpolate position
-        if (current.position && target.position) {
-            interpolated.position = {
-                x: current.position.x + (target.position.x - current.position.x) * t,
-                y: current.position.y + (target.position.y - current.position.y) * t
-            };
-        }
-
-        // Interpolate vector for ships
-        if (current.vector && target.vector) {
-            interpolated.vector = {
-                x: current.vector.x + (target.vector.x - current.vector.x) * t,
-                y: current.vector.y + (target.vector.y - current.vector.y) * t
-            };
-        }
-
-        // Interpolate numeric values for ships
-        if (current.health !== undefined && target.health !== undefined) {
-            interpolated.health = Math.round(current.health + (target.health - current.health) * t);
-        }
-
-        if (current.fuel !== undefined && target.fuel !== undefined) {
-            interpolated.fuel = Math.round(current.fuel + (target.fuel - current.fuel) * t);
-        }
-
-        if (current.cargo !== undefined && target.cargo !== undefined) {
-            interpolated.cargo = Math.round(current.cargo + (target.cargo - current.cargo) * t);
-        }
-
-        return interpolated;
-    }
-
-    // Start interpolation to target frame
-    startInterpolation(targetFrame) {
-        if (targetFrame === this.currentFrame) {
-            this.interpolationProgress = 0;
-            this.targetFrame = this.currentFrame;
-            return;
-        }
-
-        this.targetFrame = targetFrame;
-        this.interpolationProgress = 0;
-        this.lastFrameTime = performance.now();
-    }
-
-    // Update interpolation progress
-    updateInterpolation() {
-        if (!this.interpolationEnabled || this.interpolationProgress >= 1) {
-            return false;
-        }
-
-        const now = performance.now();
-        const deltaTime = now - this.lastFrameTime;
-        this.lastFrameTime = now;
-
-        // Complete interpolation in 500ms for smooth transitions
-        const interpolationDuration = 500;
-        this.interpolationProgress += deltaTime / interpolationDuration;
-
-        if (this.interpolationProgress >= 1) {
-            this.interpolationProgress = 1;
-            this.currentFrame = this.targetFrame;
-            this.interpolationProgress = 0;
-            this.updateTimelineUI();
-            this.updateEntityInfo(); // Update entity info when interpolation completes
-            return true; // Interpolation complete
-        }
-
-        // Update entity info during interpolation for smooth real-time updates
-        this.updateEntityInfo();
-        return false; // Interpolation still in progress
-    }
-
-    // Set interpolation mode
-    setInterpolationEnabled(enabled) {
-        this.interpolationEnabled = enabled;
-        if (!enabled) {
-            this.interpolationProgress = 0;
-            this.targetFrame = this.currentFrame;
-        }
-    }
-
-    // Check if currently interpolating
-    isInterpolating() {
-        return this.interpolationEnabled && this.interpolationProgress > 0 && this.interpolationProgress < 1;
-    }
-
-    // Stop interpolation and preserve current frame position
-    stopInterpolation() {
-        if (this.interpolationProgress > 0 && this.interpolationProgress < 1) {
-            // If we're in the middle of interpolation, complete it to the current visual state
-            this.currentFrame = this.targetFrame;
-            this.interpolationProgress = 0;
-            this.updateTimelineUI();
-        }
     }
 }
