@@ -205,7 +205,7 @@ class GameDataManager {
                 html += `<span class="entity-detail">Pos: (${Math.round(data.position.x)}, ${Math.round(data.position.y)})</span>`;
                 html += `<span class="entity-detail">HP: ${data.health}</span>`;
                 html += `<span class="entity-detail">Fuel: ${data.fuel}</span>`;
-                html += `<span class="entity-detail">Type: ${data.type}</span>`;
+                html += `<span class="entity-detail">Type: ${this.getShipTypeName(data.type)}</span>`;
                 html += `<span class="entity-detail">Cargo: ${data.cargo}</span>`;
                 break;
             case 'asteroid':
@@ -251,6 +251,18 @@ class GameDataManager {
 
         const entity = entityArray.find(e => e && e.id === id);
         return entity ? { type, data: entity } : null;
+    }
+
+    getShipTypeName(shipType) {
+        const shipTypes = {
+            0: "MotherShip",
+            1: "SuckerShip",
+            2: "DrillShip",
+            3: "TankerShip",
+            4: "TruckShip",
+            5: "BattleShip"
+        };
+        return shipTypes[shipType] || `Unknown (${shipType})`;
     }
 
     getGameData() {

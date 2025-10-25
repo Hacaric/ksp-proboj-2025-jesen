@@ -180,26 +180,22 @@ class Renderer {
                 angle = Math.atan2(ship.vector.y, ship.vector.x);
             }
 
-            // Draw triangle ship
+            // Draw ship based on type
             this.ctx.save();
             this.ctx.translate(pos.x, pos.y);
             this.ctx.rotate(angle);
 
-            this.ctx.beginPath();
-            this.ctx.moveTo(size, 0);
-            this.ctx.lineTo(-size * 0.7, -size * 0.7);
-            this.ctx.lineTo(-size * 0.7, size * 0.7);
-            this.ctx.closePath();
-            this.ctx.fill();
+            this.drawShipByType(ship.type, size);
 
-            this.ctx.restore();
-
-            // Draw health bar
+            // Draw health bar (positioned relative to ship's rotation)
             if (ship.health > 0) {
                 const healthPercent = ship.health / 100;
                 this.ctx.fillStyle = healthPercent > 0.5 ? '#4aff4a' : healthPercent > 0.25 ? '#ffff4a' : '#ff4a4a';
-                this.ctx.fillRect(pos.x - size, pos.y - size - 10 * this.camera.zoom, size * 2 * healthPercent, 4 * this.camera.zoom);
+                // Position healthbar above the ship in screen space, not world space
+                this.ctx.fillRect(-size, -size - 10 * this.camera.zoom, size * 2 * healthPercent, 4 * this.camera.zoom);
             }
+
+            this.ctx.restore();
 
             // Draw player number
             this.ctx.fillStyle = '#ffffff';
@@ -207,6 +203,149 @@ class Renderer {
             this.ctx.textAlign = 'center';
             this.ctx.fillText(`P${ship.player + 1}`, pos.x, pos.y + 4 * this.camera.zoom);
         });
+    }
+
+    drawShipByType(shipType, size) {
+        switch (shipType) {
+            case 0: // MotherShip
+                this.drawMotherShip(size);
+                break;
+            case 1: // SuckerShip
+                this.drawSuckerShip(size);
+                break;
+            case 2: // DrillShip
+                this.drawDrillShip(size);
+                break;
+            case 3: // TankerShip
+                this.drawTankerShip(size);
+                break;
+            case 4: // TruckShip
+                this.drawTruckShip(size);
+                break;
+            case 5: // BattleShip
+                this.drawBattleShip(size);
+                break;
+            default:
+                // Default triangle for unknown types
+                this.drawDefaultShip(size);
+        }
+    }
+
+    drawMotherShip(size) {
+        // Large hexagon shape for MotherShip
+        this.ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+            const angle = (Math.PI / 3) * i;
+            const x = size * Math.cos(angle);
+            const y = size * Math.sin(angle);
+            if (i === 0) {
+                this.ctx.moveTo(x, y);
+            } else {
+                this.ctx.lineTo(x, y);
+            }
+        }
+        this.ctx.closePath();
+        this.ctx.fill();
+
+        // Crown/halo indicator
+        this.ctx.strokeStyle = '#ffdd00';
+        this.ctx.lineWidth = 3;
+        this.ctx.beginPath();
+        this.ctx.arc(0, 0, size * 1.2, 0, Math.PI * 2);
+        this.ctx.stroke();
+    }
+
+    drawSuckerShip(size) {
+        // Basic triangle
+        this.ctx.beginPath();
+        this.ctx.moveTo(size, 0);
+        this.ctx.lineTo(-size * 0.7, -size * 0.7);
+        this.ctx.lineTo(-size * 0.7, size * 0.7);
+        this.ctx.closePath();
+        this.ctx.fill();
+
+        // Circular suction indicator
+        this.ctx.strokeStyle = '#00aaff';
+        this.ctx.lineWidth = 2;
+        this.ctx.beginPath();
+        this.ctx.arc(size * 0.3, 0, size * 0.3, 0, Math.PI * 2);
+        this.ctx.stroke();
+    }
+
+    drawDrillShip(size) {
+        // Basic triangle
+        this.ctx.beginPath();
+        this.ctx.moveTo(size, 0);
+        this.ctx.lineTo(-size * 0.7, -size * 0.7);
+        this.ctx.lineTo(-size * 0.7, size * 0.7);
+        this.ctx.closePath();
+        this.ctx.fill();
+
+        // Drill bit/spike indicator
+        this.ctx.fillStyle = '#888888';
+        this.ctx.beginPath();
+        this.ctx.moveTo(size * 1.2, 0);
+        this.ctx.lineTo(size * 0.8, -size * 0.2);
+        this.ctx.lineTo(size * 0.8, size * 0.2);
+        this.ctx.closePath();
+        this.ctx.fill();
+    }
+
+    drawTankerShip(size) {
+        // Basic triangle
+        this.ctx.beginPath();
+        this.ctx.moveTo(size, 0);
+        this.ctx.lineTo(-size * 0.7, -size * 0.7);
+        this.ctx.lineTo(-size * 0.7, size * 0.7);
+        this.ctx.closePath();
+        this.ctx.fill();
+
+        // Fuel tank cylinder
+        this.ctx.fillStyle = '#666666';
+        this.ctx.fillRect(-size * 0.3, -size * 0.4, size * 0.6, size * 0.8);
+    }
+
+    drawTruckShip(size) {
+        // Basic triangle
+        this.ctx.beginPath();
+        this.ctx.moveTo(size, 0);
+        this.ctx.lineTo(-size * 0.7, -size * 0.7);
+        this.ctx.lineTo(-size * 0.7, size * 0.7);
+        this.ctx.closePath();
+        this.ctx.fill();
+
+        // Cargo box
+        this.ctx.strokeStyle = '#8b4513';
+        this.ctx.lineWidth = 2;
+        this.ctx.strokeRect(-size * 0.4, -size * 0.3, size * 0.5, size * 0.6);
+    }
+
+    drawBattleShip(size) {
+        // Basic triangle
+        this.ctx.beginPath();
+        this.ctx.moveTo(size, 0);
+        this.ctx.lineTo(-size * 0.7, -size * 0.7);
+        this.ctx.lineTo(-size * 0.7, size * 0.7);
+        this.ctx.closePath();
+        this.ctx.fill();
+
+        // Cannon/weapon indicator
+        this.ctx.strokeStyle = '#ff0000';
+        this.ctx.lineWidth = 3;
+        this.ctx.beginPath();
+        this.ctx.moveTo(size * 0.5, 0);
+        this.ctx.lineTo(size * 1.3, 0);
+        this.ctx.stroke();
+    }
+
+    drawDefaultShip(size) {
+        // Default triangle for unknown ship types
+        this.ctx.beginPath();
+        this.ctx.moveTo(size, 0);
+        this.ctx.lineTo(-size * 0.7, -size * 0.7);
+        this.ctx.lineTo(-size * 0.7, size * 0.7);
+        this.ctx.closePath();
+        this.ctx.fill();
     }
 
     renderSelection() {
