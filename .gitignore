@@ -2,3 +2,4 @@ __pycache__/
 /runner_linux
 /server_linux
 /game
+.idea/
