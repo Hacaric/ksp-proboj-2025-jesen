@@ -95,10 +95,16 @@ func (t BuyTurnData) Execute(m *Map, p *Player) error {
 
 	price := ShipRockPrice(t.Type)
 	if p.RockAmount < price {
-		return fmt.Errorf("not enough rocks in mothership")
+		return fmt.Errorf("not enough rocks in mothership: needed %v, has %v", price, p.RockAmount)
+	}
+
+	// Check if player has enough fuel for new ship
+	if p.FuelAmount < ShipStartFuel {
+		return fmt.Errorf("insufficient fuel for new ship: needed %v, has %v", ShipStartFuel, p.FuelAmount)
 	}
 
 	p.RockAmount -= price
+	p.FuelAmount -= ShipStartFuel
 	NewShip(m, p, t.Type)
 	return nil
 }
