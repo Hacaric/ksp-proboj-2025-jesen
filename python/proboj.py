@@ -79,6 +79,7 @@ class Ship:
     fuel: float
     type: ShipType
     rock: int
+    is_destroyed: bool = False
 
     def update_from_dict(self, data: Dict[str, Any]) -> None:
         self.id = data["id"]
@@ -89,12 +90,33 @@ class Ship:
         self.fuel = data["fuel"]
         self.type = ShipType(data["type"])
         self.rock = data["rock"]
+        self.is_destroyed = data.get("is_destroyed", False)
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "Ship":
-        obj = cls(0, 0, Position(0, 0), Position(0, 0), 0, 0, ShipType.MOTHER_SHIP, 0)
+        obj = cls(0, 0, Position(0, 0), Position(0, 0), 0, 0, ShipType.MOTHER_SHIP, 0, False)
         obj.update_from_dict(data)
         return obj
+
+    def is_alive(self) -> bool:
+        """Check if the ship is alive (has health and is not destroyed)."""
+        return self.health > 0 and not self.is_destroyed
+
+    def is_operable(self) -> bool:
+        """Check if the ship can be operated (not destroyed)."""
+        return not self.is_destroyed
+
+    def can_shoot(self) -> bool:
+        """Check if the ship can shoot (BattleShip and not destroyed)."""
+        return self.type == ShipType.BATTLE_SHIP and not self.is_destroyed
+
+    def can_mine(self) -> bool:
+        """Check if the ship can mine (DrillShip or SuckerShip and not destroyed)."""
+        return (self.type == ShipType.DRILL_SHIP or self.type == ShipType.SUCKER_SHIP) and not self.is_destroyed
+
+    def can_carry_cargo(self) -> bool:
+        """Check if the ship can carry cargo (TankerShip or TruckShip and not destroyed)."""
+        return (self.type == ShipType.TANKER_SHIP or self.type == ShipType.TRUCK_SHIP) and not self.is_destroyed
 
 
 @dataclass

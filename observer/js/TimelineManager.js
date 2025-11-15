@@ -130,12 +130,81 @@ class TimelineManager {
 
             // Check if we can advance to next frame
             if (this.dataManager.getCurrentFrame() < this.dataManager.getTotalFrames() - 1) {
-                this.dataManager.nextFrame();
+                try {
+                    this.dataManager.nextFrame();
+                } catch (error) {
+                    console.error("Error advancing frame:", error);
+                    // Try to skip to next valid frame
+                    this.handleCorruptedFrame();
+                }
             } else {
                 // Reached the end, pause playback
                 this.pause();
             }
         }
+    }
+
+    // Handle corrupted frames by attempting to skip them
+    handleCorruptedFrame() {
+        const originalFrame = this.dataManager.getCurrentFrame();
+        let skipAttempts = 0;
+        const maxSkipAttempts = 10;
+
+        while (skipAttempts < maxSkipAttempts) {
+            if (this.dataManager.getCurrentFrame() >= this.dataManager.getTotalFrames() - 1) {
+                // Reached the end
+                this.pause();
+                return;
+            }
+
+            this.dataManager.nextFrame();
+            const gameData = this.dataManager.getCurrentGameData();
+
+            // If we got valid data, stop skipping
+            if (gameData && this.dataManager.validateGameData(gameData)) {
+                console.log(`Successfully skipped corrupted frame ${originalFrame}, now at frame ${this.dataManager.getCurrentFrame()}`);
+                return;
+            }
+
+            skipAttempts++;
+        }
+
+        // If we couldn't find a valid frame, pause and show error
+        console.error(`Could not find valid frame after skipping ${maxSkipAttempts} corrupted frames from frame ${originalFrame}`);
+        this.pause();
+        this.showErrorMessage("Timeline corrupted: Multiple invalid frames detected. Please reload the game data.");
+    }
+
+    // Show error message to user
+    showErrorMessage(message) {
+        const errorDiv = document.getElementById('errorMessage') || this.createErrorDiv();
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            errorDiv.style.display = 'none';
+        }, 5000);
+    }
+
+    // Create error message div if it doesn't exist
+    createErrorDiv() {
+        const errorDiv = document.createElement('div');
+        errorDiv.id = 'errorMessage';
+        errorDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ff4444;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            z-index: 1000;
+            font-family: Arial, sans-serif;
+            max-width: 300px;
+        `;
+        document.body.appendChild(errorDiv);
+        return errorDiv;
     }
 
     nextFrame() {

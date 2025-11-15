@@ -74,6 +74,9 @@ func GameTick(m *Map) {
 		TickPlayerShips(m, player)
 	}
 
+	// Check for ships that have reached 0 HP and mark them as destroyed
+	CheckAndMarkDestroyedShips(m)
+
 	m.Tick()
 
 	observerState := StateForObserver(m)
@@ -85,7 +88,7 @@ func GameTick(m *Map) {
 
 func TickPlayerShips(m *Map, p *Player) {
 	for _, ship := range m.Ships {
-		if ship == nil || ship.PlayerID != p.ID {
+		if ship == nil || ship.PlayerID != p.ID || ship.IsDestroyed {
 			continue
 		}
 

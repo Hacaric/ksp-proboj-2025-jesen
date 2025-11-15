@@ -95,10 +95,16 @@ func (t BuyTurnData) Execute(m *Map, p *Player) error {
 
 	price := ShipRockPrice(t.Type)
 	if p.RockAmount < price {
-		return fmt.Errorf("not enough rocks in mothership")
+		return fmt.Errorf("not enough rocks in mothership: needed %v, has %v", price, p.RockAmount)
+	}
+
+	// Check if player has enough fuel for new ship
+	if p.FuelAmount < ShipStartFuel {
+		return fmt.Errorf("insufficient fuel for new ship: needed %v, has %v", ShipStartFuel, p.FuelAmount)
 	}
 
 	p.RockAmount -= price
+	p.FuelAmount -= ShipStartFuel
 	NewShip(m, p, t.Type)
 	return nil
 }
@@ -114,8 +120,8 @@ func (t MoveTurnData) Execute(m *Map, p *Player) error {
 	}
 
 	ship := m.Ships[t.ShipID]
-	if ship == nil {
-		return fmt.Errorf("ship %v has been destroyed", t.ShipID)
+	if err := ValidateShipOperable(ship); err != nil {
+		return err
 	}
 	if ship.PlayerID != p.ID {
 		return fmt.Errorf("ship %v does not belong to player %v", t.ShipID, p.ID)
@@ -170,12 +176,12 @@ func (t LoadTurnData) Execute(m *Map, p *Player) error {
 	}
 
 	source := m.Ships[t.SourceID]
-	if source == nil {
-		return fmt.Errorf("source ship %v has been destroyed", t.SourceID)
+	if err := ValidateShipOperable(source); err != nil {
+		return fmt.Errorf("source ship %v: %v", t.SourceID, err)
 	}
 	destination := m.Ships[t.DestinationID]
-	if destination == nil {
-		return fmt.Errorf("destination ship %v has been destroyed", t.DestinationID)
+	if err := ValidateShipOperable(destination); err != nil {
+		return fmt.Errorf("destination ship %v: %v", t.DestinationID, err)
 	}
 
 	if source.PlayerID != p.ID {
@@ -227,12 +233,12 @@ func (t SiphonTurnData) Execute(m *Map, p *Player) error {
 	}
 
 	source := m.Ships[t.SourceID]
-	if source == nil {
-		return fmt.Errorf("source ship %v has been destroyed", t.SourceID)
+	if err := ValidateShipOperable(source); err != nil {
+		return fmt.Errorf("source ship %v: %v", t.SourceID, err)
 	}
 	destination := m.Ships[t.DestinationID]
-	if destination == nil {
-		return fmt.Errorf("destination ship %v has been destroyed", t.DestinationID)
+	if err := ValidateShipOperable(destination); err != nil {
+		return fmt.Errorf("destination ship %v: %v", t.DestinationID, err)
 	}
 
 	if source.PlayerID != p.ID {
@@ -275,12 +281,19 @@ func (t ShootTurnData) Execute(m *Map, p *Player) error {
 	}
 
 	source := m.Ships[t.SourceID]
-	if source == nil {
-		return fmt.Errorf("source ship %v has been destroyed", t.SourceID)
+	if err := ValidateShipOperable(source); err != nil {
+		return fmt.Errorf("source ship %v: %v", t.SourceID, err)
 	}
 	destination := m.Ships[t.DestinationID]
+	// Additional validation for target - prevent shooting at ships that are already destroyed or at 0 HP
 	if destination == nil {
-		return fmt.Errorf("destination ship %v has been destroyed", t.DestinationID)
+		return fmt.Errorf("destination ship %v does not exist", t.DestinationID)
+	}
+	if destination.IsDestroyed {
+		return fmt.Errorf("destination ship %v is already destroyed", t.DestinationID)
+	}
+	if destination.Health <= 0 {
+		return fmt.Errorf("destination ship %v already has 0 health", t.DestinationID)
 	}
 
 	if source.PlayerID != p.ID {
@@ -307,10 +320,13 @@ func (t ShootTurnData) Execute(m *Map, p *Player) error {
 	}
 
 	destination.Health -= ShipShootDamage
-	if destination.Health < 0 {
-		NewAsteroidFromShip(m, destination, FuelAsteroid)
-		NewAsteroidFromShip(m, destination, RockAsteroid)
-		m.Ships[destination.ID] = nil
+	if destination.Health <= 0 {
+		// Only destroy if not already destroyed to prevent double destruction
+		if !destination.IsDestroyed {
+			DestroyShip(m, destination)
+		} else {
+			m.runner.Log(fmt.Sprintf("Ship %d already destroyed, skipping destruction", destination.ID))
+		}
 	}
 
 	return nil
@@ -326,8 +342,8 @@ func (t RepairTurnData) Execute(m *Map, p *Player) error {
 	}
 
 	ship := m.Ships[t.ShipID]
-	if ship == nil {
-		return fmt.Errorf("ship %v has been destroyed", t.ShipID)
+	if err := ValidateShipOperable(ship); err != nil {
+		return err
 	}
 	if ship.PlayerID != p.ID {
 		return fmt.Errorf("ship %v does not belong to player %v", t.ShipID, p.ID)

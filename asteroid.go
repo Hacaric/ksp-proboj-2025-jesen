@@ -104,10 +104,19 @@ func MineAsteroid(m *Map, ship *Ship, asteroid *Asteroid) {
 	if newMaterial <= 0 {
 		m.Asteroids[asteroid.ID] = nil
 	} else {
+		// Store the original surface area before updating asteroid.Size
+		currentSurfaceArea := asteroid.Size * asteroid.Size * math.Pi
+
+		// Update asteroid size based on remaining material
 		asteroid.Size = math.Sqrt(newMaterial / MaterialToSurfaceRatio / math.Pi)
+
 		if asteroid.OwnedSurface > 0 {
-			surfaceRatio := asteroid.OwnedSurface / (currentMaterial / MaterialToSurfaceRatio)
-			asteroid.OwnedSurface = newMaterial / MaterialToSurfaceRatio * surfaceRatio
+			// Calculate the ratio of owned surface to total surface area
+			surfaceRatio := asteroid.OwnedSurface / currentSurfaceArea
+
+			// Calculate new surface area and apply the same ownership ratio
+			newSurfaceArea := newMaterial / MaterialToSurfaceRatio
+			asteroid.OwnedSurface = newSurfaceArea * surfaceRatio
 		}
 	}
 }

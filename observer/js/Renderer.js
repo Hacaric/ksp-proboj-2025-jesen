@@ -168,16 +168,50 @@ class Renderer {
 
     renderShips() {
         this.gameData.ships.forEach(ship => {
+            // Skip invalid ship data to prevent rendering errors
+            if (!ship || ship.position === undefined || ship.health === undefined) {
+                console.warn("Skipping invalid ship data:", ship);
+                return;
+            }
+
             const pos = this.camera.worldToScreen(ship.position.x, ship.position.y);
             const size = 150 * this.camera.zoom;
 
-            const playerColor = this.dataManager.getPlayerColor(ship.player);
-            this.ctx.fillStyle = playerColor;
+            // Check if ship is destroyed - be more defensive about undefined values
+            const isDestroyed = (ship.health === 0) || (ship.is_destroyed === true) || (ship.health <= 0);
+
+            // Check if this is a mothership (type 0) - motherships should never show destroyed status or health bars
+            const isMothership = ship.type === 0;
+
+            // Safely get player color with fallback
+            let playerColor = '#ffffff';
+            try {
+                playerColor = this.dataManager.getPlayerColor(ship.player);
+            } catch (error) {
+                console.warn("Error getting player color for ship:", ship, error);
+            }
+
+            // Set color and opacity based on ship status, but motherships always have full opacity
+            if (isMothership) {
+                this.ctx.fillStyle = playerColor;
+                this.ctx.globalAlpha = 1.0; // Motherships always full opacity
+            } else if (isDestroyed) {
+                this.ctx.fillStyle = this.getDestroyedColor(playerColor);
+                this.ctx.globalAlpha = 0.4; // Reduced opacity for destroyed ships
+            } else {
+                this.ctx.fillStyle = playerColor;
+                this.ctx.globalAlpha = 1.0;
+            }
 
             // Calculate ship angle based on vector or default to pointing right
             let angle = 0;
-            if (ship.vector.x !== 0 || ship.vector.y !== 0) {
-                angle = Math.atan2(ship.vector.y, ship.vector.x);
+            if (ship.vector && (ship.vector.x !== 0 || ship.vector.y !== 0)) {
+                try {
+                    angle = Math.atan2(ship.vector.y, ship.vector.x);
+                } catch (error) {
+                    console.warn("Error calculating ship angle:", ship.vector, error);
+                    angle = 0;
+                }
             }
 
             // Draw ship based on type
@@ -185,23 +219,50 @@ class Renderer {
             this.ctx.translate(pos.x, pos.y);
             this.ctx.rotate(angle);
 
-            this.drawShipByType(ship.type, size);
+            // Safely draw ship type with fallback
+            try {
+                this.drawShipByType(ship.type || 0, size);
+            } catch (error) {
+                console.warn("Error drawing ship type:", ship.type, error);
+                // Draw a basic triangle as fallback
+                this.ctx.beginPath();
+                this.ctx.moveTo(size, 0);
+                this.ctx.lineTo(-size, -size/2);
+                this.ctx.lineTo(-size, size/2);
+                this.ctx.closePath();
+                this.ctx.fill();
+            }
 
-            // Draw health bar (positioned relative to ship's rotation)
-            if (ship.health > 0) {
-                const healthPercent = ship.health / 100;
-                this.ctx.fillStyle = healthPercent > 0.5 ? '#4aff4a' : healthPercent > 0.25 ? '#ffff4a' : '#ff4a4a';
-                // Position healthbar above the ship in screen space, not world space
-                this.ctx.fillRect(-size, -size - 10 * this.camera.zoom, size * 2 * healthPercent, 4 * this.camera.zoom);
+            // Add X mark for destroyed ships (but not motherships)
+            if (isDestroyed && !isMothership) {
+                this.drawDestroyedMark(size);
+            }
+
+            // Reset globalAlpha before drawing health bar to keep it fully visible
+            this.ctx.globalAlpha = 1.0;
+
+            // Draw health bar or destroyed label (but not for motherships)
+            if (!isMothership) {
+                if (ship.health > 0 && !isDestroyed) {
+                    const healthPercent = ship.health / 100;
+                    this.ctx.fillStyle = healthPercent > 0.5 ? '#4aff4a' : healthPercent > 0.25 ? '#ffff4a' : '#ff4a4a';
+                    // Position healthbar above the ship in screen space, not world space
+                    this.ctx.fillRect(-size, -size - 10 * this.camera.zoom, size * 2 * healthPercent, 4 * this.camera.zoom);
+                } else if (isDestroyed) {
+                    this.drawDestroyedLabel(size);
+                }
             }
 
             this.ctx.restore();
 
             // Draw player number
-            this.ctx.fillStyle = '#ffffff';
+            this.ctx.fillStyle = isDestroyed ? '#aaaaaa' : '#ffffff';
             this.ctx.font = `${12 * this.camera.zoom}px Arial`;
             this.ctx.textAlign = 'center';
             this.ctx.fillText(`P${ship.player + 1}`, pos.x, pos.y + 4 * this.camera.zoom);
+
+            // Reset globalAlpha
+            this.ctx.globalAlpha = 1.0;
         });
     }
 
@@ -413,5 +474,35 @@ class Renderer {
             this.ctx.closePath();
             this.ctx.fill();
         }
+    }
+
+    getDestroyedColor(originalColor) {
+        // Convert the original color to grayscale for destroyed ships
+        // Simple approach: extract RGB components and convert to gray
+        const r = parseInt(originalColor.slice(1, 3), 16);
+        const g = parseInt(originalColor.slice(3, 5), 16);
+        const b = parseInt(originalColor.slice(5, 7), 16);
+        const gray = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+        return `#${gray.toString(16).padStart(2, '0')}${gray.toString(16).padStart(2, '0')}${gray.toString(16).padStart(2, '0')}`;
+    }
+
+    drawDestroyedMark(size) {
+        // Draw red X mark over destroyed ships
+        this.ctx.strokeStyle = '#ff0000';
+        this.ctx.lineWidth = Math.max(2, 4 * this.camera.zoom);
+        this.ctx.beginPath();
+        this.ctx.moveTo(-size * 0.6, -size * 0.6);
+        this.ctx.lineTo(size * 0.6, size * 0.6);
+        this.ctx.moveTo(size * 0.6, -size * 0.6);
+        this.ctx.lineTo(-size * 0.6, size * 0.6);
+        this.ctx.stroke();
+    }
+
+    drawDestroyedLabel(size) {
+        // Draw "DESTROYED" text above the ship
+        this.ctx.fillStyle = '#ff0000';
+        this.ctx.font = `bold ${10 * this.camera.zoom}px Arial`;
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText('DESTROYED', 0, -size - 15 * this.camera.zoom);
     }
 }
