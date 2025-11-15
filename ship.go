@@ -14,25 +14,25 @@ const (
 )
 
 type Ship struct {
-	ID         int      `json:"id"`
-	PlayerID   int      `json:"player"`
-	Position   Position `json:"position"`
-	Vector     Position `json:"vector"`
-	Health     int      `json:"health"`
-	Fuel       float64  `json:"fuel"`
-	Type       ShipType `json:"type"`
-	Rock       int      `json:"rock"`
-	IsDestroyed bool    `json:"is_destroyed"`
+	ID          int      `json:"id"`
+	PlayerID    int      `json:"player"`
+	Position    Position `json:"position"`
+	Vector      Position `json:"vector"`
+	Health      int      `json:"health"`
+	Fuel        float64  `json:"fuel"`
+	Type        ShipType `json:"type"`
+	Rock        int      `json:"rock"`
+	IsDestroyed bool     `json:"is_destroyed"`
 }
 
 func NewShip(m *Map, p *Player, shipType ShipType) *Ship {
 	s := &Ship{
-		ID:         len(m.Ships),
-		PlayerID:   p.ID,
-		Position:   p.MotherShip.Position,
-		Health:     ShipMaxHealth,
-		Fuel:       ShipStartFuel,
-		Type:       shipType,
+		ID:          len(m.Ships),
+		PlayerID:    p.ID,
+		Position:    p.MotherShip.Position,
+		Health:      ShipMaxHealth,
+		Fuel:        ShipStartFuel,
+		Type:        shipType,
 		IsDestroyed: false,
 	}
 
@@ -41,7 +41,7 @@ func NewShip(m *Map, p *Player, shipType ShipType) *Ship {
 }
 
 func DestroyShip(m *Map, ship *Ship) {
-	if ship == nil {
+	if ship == nil || ship.Type == ShipType(0) {
 		return
 	}
 
