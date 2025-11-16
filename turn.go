@@ -75,7 +75,7 @@ func ExecuteTurns(m *Map, p *Player, turns []TurnContainer) {
 
 		err = turn.Execute(m, p)
 		if err != nil {
-			m.runner.Log(fmt.Sprintf("error while executing turn '%v': %v", container, err))
+			m.runner.Log(fmt.Sprintf("error while executing turn '%v': %v", turn, err))
 		}
 	}
 }
