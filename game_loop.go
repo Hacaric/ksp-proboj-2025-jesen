@@ -101,6 +101,16 @@ func TickPlayerShips(m *Map, p *Player) {
 	}
 }
 
+func CheckAsteroidType(ship *Ship, asteroid *Asteroid) bool {
+	if ship.Type == SuckerShip && asteroid.Type == FuelAsteroid {
+		return true
+	}
+	if ship.Type == DrillShip && asteroid.Type == RockAsteroid {
+		return true
+	}
+	return false
+}
+
 func HandleShipMining(m *Map, ship *Ship) {
 	for _, asteroid := range m.Asteroids {
 		if asteroid == nil {
@@ -108,7 +118,7 @@ func HandleShipMining(m *Map, ship *Ship) {
 		}
 
 		distance := ship.Position.Distance(asteroid.Position)
-		if distance <= ShipMiningDistance {
+		if distance <= ShipMiningDistance && CheckAsteroidType(ship, asteroid) {
 			MineAsteroid(m, ship, asteroid)
 			break
 		}
