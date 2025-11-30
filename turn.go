@@ -241,6 +241,12 @@ func (t SiphonTurnData) Execute(m *Map, p *Player) error {
 		return fmt.Errorf("destination ship %v: %v", t.DestinationID, err)
 	}
 
+	if source.Type != MotherShip && source.Type != TankerShip &&
+		destination.Type != MotherShip && destination.Type != TankerShip {
+		return fmt.Errorf("fuel transfer requires at least one ship to be MotherShip or TankerShip: source is %v, destination is %v",
+			source.Type, destination.Type)
+	}
+
 	if source.PlayerID != p.ID {
 		return fmt.Errorf("source ship %v does not belong to player %v", t.SourceID, p.ID)
 	}
