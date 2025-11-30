@@ -136,6 +136,6 @@ func UpdateScores(m *Map) {
 		}
 
 		score := AsteroidScore(*asteroid)
-		m.Players[asteroid.OwnerID].Score = int(score)
+		m.Players[asteroid.OwnerID].Score += int(score)
 	}
 }
