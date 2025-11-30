@@ -6,6 +6,8 @@ class GameDataManager {
         this.selectedEntity = null;
         // Game constants for calculations
         this.MATERIAL_TO_SURFACE_RATIO = 1.0;
+        // Dynamic player elements registry
+        this.playerElementsRegistry = new Map(); // playerId -> elements map
     }
 
     async loadGameData() {
@@ -24,6 +26,9 @@ class GameDataManager {
         this.selectedEntity = null;
 
         console.log(`Loaded ${this.gameStates.length} game states from uploaded file`);
+
+        // Generate dynamic player panels first
+        this.generatePlayerPanels();
 
         this.updatePlayerInfo();
         this.updatePlayerColors();
@@ -150,21 +155,32 @@ class GameDataManager {
         if (!currentGameData) return;
 
         currentGameData.players.forEach(player => {
-            const playerNum = player.id + 1;
+            const playerElements = this.getPlayerElements(player.id);
+            if (!playerElements) return;
 
             // Update player header with name and ID
-            const headerElement = document.getElementById(`p${playerNum}Header`);
-            if (headerElement) {
-                headerElement.textContent = `${player.name} (${player.id})`;
+            if (playerElements.header) {
+                playerElements.header.textContent = `${player.name} (${player.id})`;
+            }
+
+            // Update score
+            if (playerElements.score) {
+                playerElements.score.textContent = player.score || 0;
             }
 
             // Update rock and fuel
-            document.getElementById(`p${playerNum}Rock`).textContent = player.mothership.rock;
-            document.getElementById(`p${playerNum}Fuel`).textContent = player.mothership.fuel;
+            if (playerElements.rock) {
+                playerElements.rock.textContent = player.mothership.rock;
+            }
+            if (playerElements.fuel) {
+                playerElements.fuel.textContent = player.mothership.fuel;
+            }
 
             // Count ships for this player
             const playerShips = currentGameData.ships.filter(s => s.player === player.id);
-            document.getElementById(`p${playerNum}Ships`).textContent = playerShips.length;
+            if (playerElements.ships) {
+                playerElements.ships.textContent = playerShips.length;
+            }
         });
     }
 
@@ -180,10 +196,9 @@ class GameDataManager {
         if (!currentGameData) return;
 
         currentGameData.players.forEach(player => {
-            const playerNum = player.id + 1;
-            const playerInfo = document.getElementById(`player${playerNum}Info`);
-            if (playerInfo) {
-                playerInfo.style.borderLeftColor = player.color || '#ffffff';
+            const playerElements = this.getPlayerElements(player.id);
+            if (playerElements && playerElements.panel) {
+                playerElements.panel.style.borderLeftColor = player.color || '#ffffff';
             }
         });
     }
@@ -325,5 +340,76 @@ class GameDataManager {
 
     getGameData() {
         return this.getCurrentGameData();
+    }
+
+    // Dynamic Player Panel Generation Methods
+    generatePlayerPanels() {
+        const currentGameData = this.getCurrentGameData();
+        if (!currentGameData || !currentGameData.players) return;
+
+        const container = document.getElementById('playersContainer');
+        if (!container) return;
+
+        container.innerHTML = ''; // Clear existing panels
+
+        // Apply layout class based on player count
+        container.className = 'players-container';
+        if (currentGameData.players.length > 4) {
+            container.classList.add('two-columns');
+        }
+
+        // Clear registry
+        this.playerElementsRegistry.clear();
+
+        // Generate panel for each player
+        currentGameData.players.forEach(player => {
+            const panel = this.createPlayerPanel(player);
+            container.appendChild(panel);
+            this.registerPlayerElements(player.id, panel);
+        });
+    }
+
+    createPlayerPanel(player) {
+        const panel = document.createElement('div');
+        panel.className = 'player-info';
+        panel.id = `player${player.id}Info`;
+
+        panel.innerHTML = `
+            <h3 class="player-header">${player.name} (${player.id})</h3>
+            <div class="stat-row">
+                <span>Score:</span>
+                <span class="player-score">${player.score || 0}</span>
+            </div>
+            <div class="stat-row">
+                <span>Rock:</span>
+                <span class="player-rock">1000</span>
+            </div>
+            <div class="stat-row">
+                <span>Fuel:</span>
+                <span class="player-fuel">1000</span>
+            </div>
+            <div class="stat-row">
+                <span>Ships:</span>
+                <span class="player-ships">0</span>
+            </div>
+        `;
+
+        return panel;
+    }
+
+    registerPlayerElements(playerId, panel) {
+        const elements = {
+            panel: panel,
+            header: panel.querySelector('.player-header'),
+            score: panel.querySelector('.player-score'),
+            rock: panel.querySelector('.player-rock'),
+            fuel: panel.querySelector('.player-fuel'),
+            ships: panel.querySelector('.player-ships')
+        };
+        this.playerElementsRegistry.set(playerId, elements);
+    }
+
+    getPlayerElements(playerId) {
+        return this.playerElementsRegistry.get(playerId);
     }
 }

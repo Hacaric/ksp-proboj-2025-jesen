@@ -13,8 +13,8 @@ body {
 
 .container {
     display: grid;
-    grid-template-columns: 1fr 300px;
-    grid-template-rows: 60px 1fr 120px 80px;
+    grid-template-columns: 1fr 400px;
+    grid-template-rows: 60px 1fr 40px 80px;
     height: 100vh;
     gap: 2px;
     background: #1a1a1a;
@@ -109,12 +109,16 @@ body {
     border-left: 4px solid;
 }
 
-.player1-info {
-    border-left-color: #ffffff;
+.players-container {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: 1fr; /* Default: single column */
+    max-height: 70vh; /* Allow scrolling when needed */
+    overflow-y: auto;
 }
 
-.player2-info {
-    border-left-color: #ffffff;
+.players-container.two-columns {
+    grid-template-columns: repeat(2, 1fr);
 }
 
 .player-info h3 {
@@ -132,7 +136,7 @@ body {
 .entity-details {
     grid-column: 1 / -1;
     background: #2a2a2a;
-    padding: 15px 20px;
+    padding: 10px 20px;
     border-top: 2px solid #444;
 }
 
@@ -187,35 +191,6 @@ body {
     color: #4a9eff;
 }
 
-.legend {
-    margin-top: 20px;
-    padding: 15px;
-    background: #3a3a3a;
-    border-radius: 8px;
-}
-
-.legend h4 {
-    color: #4a9eff;
-    margin-bottom: 10px;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 8px;
-    font-size: 14px;
-}
-
-.legend-color {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    margin-right: 10px;
-}
-
-.ship-color { background: #4a9eff; }
-.asteroid-color { background: #888; }
-.wormhole-color { background: #ff6b4a; }
 
 .timeline-controls {
     grid-column: 1 / -1;
