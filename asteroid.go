@@ -127,7 +127,7 @@ func UpdateScores(m *Map) {
 	}
 
 	for _, asteroid := range m.Asteroids {
-		if asteroid.OwnerID == -1 {
+		if asteroid == nil || asteroid.OwnerID == -1 {
 			continue
 		}
 
