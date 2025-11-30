@@ -40,5 +40,6 @@ func (m *Map) ShouldContinue() bool {
 
 func (m *Map) Tick() {
 	UpdateAsteroidPositions(m)
+	UpdateScores(m)
 	m.Round++
 }

@@ -120,3 +120,18 @@ func MineAsteroid(m *Map, ship *Ship, asteroid *Asteroid) {
 		}
 	}
 }
+
+func UpdateScores(m *Map) {
+	for _, p := range m.Players {
+		p.Score = 0
+	}
+
+	for _, asteroid := range m.Asteroids {
+		if asteroid.OwnerID == -1 {
+			continue
+		}
+
+		score := AsteroidScore(*asteroid)
+		m.Players[asteroid.OwnerID].Score = score
+	}
+}

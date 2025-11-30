@@ -1,6 +1,9 @@
 package main
 
-import "math/rand"
+import (
+	"math"
+	"math/rand"
+)
 
 const (
 	Radius                          = 15000                   // Game map radius
@@ -48,6 +51,7 @@ func ShipMovementFree(t ShipType) float64 {
 		return BaseShipMovementFree
 	}
 }
+
 func ShipMovementMultiplier(t ShipType) float64 {
 	switch t {
 	case TruckShip:
@@ -65,4 +69,13 @@ func ShipMovementPrice(vector Position, t ShipType) float64 {
 
 func RandomFloat(min, max float64) float64 {
 	return rand.Float64()*(max-min) + min
+}
+
+func AsteroidScore(a Asteroid) float64 {
+	asteroidSurface := a.Size * a.Size * math.Pi
+	ownedSurface := a.OwnedSurface
+
+	surfaceFactor := math.Pow(1.5, (ownedSurface/asteroidSurface)/9) * (a.Size / MaxAsteroidSize)
+
+	return 100 + surfaceFactor
 }

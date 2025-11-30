@@ -1,11 +1,12 @@
 package main
 
 type Player struct {
-	ID         int    `json:"id"`
-	Name       string `json:"name"`
-	Color      string `json:"color"`
-	MotherShip *Ship  `json:"mothership"`
-	Alive      bool   `json:"alive"`
+	ID         int     `json:"id"`
+	Name       string  `json:"name"`
+	Color      string  `json:"color"`
+	MotherShip *Ship   `json:"mothership"`
+	Alive      bool    `json:"alive"`
+	Score      float64 `json:"score"`
 }
 
 func NewPlayer(m *Map, name string) *Player {
