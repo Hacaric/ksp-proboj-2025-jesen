@@ -43,6 +43,10 @@ func NewAsteroidFromShip(m *Map, ship *Ship, asteroidType AsteroidType) *Asteroi
 		materialAmount = float64(ship.Rock)
 	}
 
+	if materialAmount == 0 {
+		return nil
+	}
+
 	size := math.Sqrt(materialAmount / MaterialToSurfaceRatio / math.Pi)
 
 	a := &Asteroid{
