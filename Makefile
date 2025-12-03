@@ -6,7 +6,10 @@ python_files != find python ! -path '*/__pycache__/*' -type f -print
 runner_v = 25.1005
 
 template.zip: $(servers) $(runners) config.json $(observer_files) $(python_files)
-	zip template.zip $^
+	zip $@ $^
+
+bundle.zip: README.md
+	zip $@ $^
 
 server_linux: $(sources)
 	docker run -v .:/app -w /app golang:1.25-bookworm go build -buildvcs=false -o server_linux .

@@ -3,6 +3,7 @@ __pycache__/
 /server_*
 /template.zip
 /game
+/bundle.zip
 .idea/
 
 *.gz
