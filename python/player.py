@@ -15,42 +15,32 @@ from proboj import (
 
 
 class MyClient(Client):
+    travelling_back = False
     def turn(self) -> List[Turn]:
         my_ships = self.get_my_ships()
         if not my_ships:
             return []
 
         turns: List[Turn] = []
+        if self.game_map.round == 0:
+            turns.append(BuyTurn(ShipType.DRILL_SHIP))
 
-        # Example: Move first ship if it exists
-        if my_ships:
-            first_ship = my_ships[0]
-            # Move the ship by a small amount
-            turns.append(MoveTurn(first_ship.id, Position(10, 5)))
+        elif self.game_map.round == 1:
+            asteroid = self.game_map.asteroids[67] #ruky hore dole
+            smer = asteroid.position.sub(my_ships[1].position).normalize()
+            turns.append(MoveTurn(my_ships[1].id, smer.scale(20)))
 
-        # Example: Buy a battleship if we have enough resources
-        my_player = self.get_my_player()
-        if my_player and my_player.rock >= 100:
-            turns.append(BuyTurn(ShipType.BATTLE_SHIP))
+        if self.game_map.round > 1:
+            if not self.travelling_back and my_ships[1].rock > 0:
+                turns.append(MoveTurn(my_ships[1].id, my_ships[1].vector.scale(-2)))
+                self.travelling_back = True
 
-        # Example: Shoot at enemy ships if we have battleships
-        for ship in my_ships:
-            if ship.type == ShipType.BATTLE_SHIP:
-                # Find enemy ships
-                enemy_ships = []
-                if self.game_map:
-                    for other_ship in self.game_map.ships:
-                        if other_ship and other_ship.player_id != self.my_player_id:
-                            enemy_ships.append(other_ship)
+            if self.travelling_back:
+                dist = my_ships[0].position.distance(my_ships[1].position)
+                if dist < 25:
+                    turns.append(LoadTurn(my_ships[1].id, my_ships[0].id, my_ships[1].rock))
 
-                # Shoot at nearest enemy if in range
-                if enemy_ships:
-                    nearest_enemy = min(
-                        enemy_ships, key=lambda e: ship.position.distance(e.position)
-                    )
-                    if ship.position.distance(nearest_enemy.position) <= 100:
-                        turns.append(ShootTurn(ship.id, nearest_enemy.id))
-
+        
         return turns
 
 
