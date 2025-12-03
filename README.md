@@ -31,10 +31,10 @@ Každý hráč riadi vesmírnu flotilu lodí v 2D priestore. Cieľom je získať
 
 ### Herné prostredie
 
-- **Mapa**: Kruhový priestor s polomerom 15 000 jednotiek
+- **Mapa**: Štvorcový priestor s polomerom 15 000 jednotiek
 - **Asteroidy**: 500 náhodne generovaných asteroidov (palivové a kamenné)
 - **Červie diery**: 25 párov teleportačných bodov pre strategický presun
-- **Počet kôl**: Maximálne 1 000 kôl na hru
+- **Počet kôl**: Maximálne ~2 000 kôl na hru
 
 ### Základné zdroje
 
@@ -46,8 +46,8 @@ Každý hráč riadi vesmírnu flotilu lodí v 2D priestore. Cieľom je získať
 
 ### MotherShip (Materská loď)
 - **Funkcia**: Základňa hráča, ukladanie zdrojov, opravy iných lodí
-- **Schopnosti**: Kúpa ostatné lode, spravovať poškodené lode v blízkosti
-- **Zdravie**: 100 HP
+- **Schopnosti**: Stavia ostatné lode, opravuje poškodené lode v blízkosti
+- **Zdravie**: 0 HP (je nezničiteľná)
 - **Špeciálne**: Nezničiteľná, chráni ostatné lode v okolí 50 jednotiek
 
 ### SuckerShip (Cucač)
@@ -116,7 +116,7 @@ V každom kole môže hráč vykonať niekoľko z týchto príkazov:
 ### Move (Pohyb)
 - **Mechanizmus**: Zmena pohybového vektora lode
 - **Spotreba**: Palivo sa stráca podľa vzdialenosti a typu lode
-- **Limitácia**: Maximálna zmena vektora je obmedzená pre vyváženosť hry
+- **Limitácia**: Maximálna veľkosť vektora je obmedzená pre vyváženosť hry
 
 ### Load (Presun kameňa)
 - **Podmienky**: Vzdialenosť medzi loďami maximálne 20 jednotiek
@@ -156,11 +156,40 @@ V každom kole môže hráč vykonať niekoľko z týchto príkazov:
 - **Body**: Získavajú sa za ovládané asteroidy (na základe povrchovej plochy), ťažbu zdrojov, zničenie nepriateľských lodí a ďalšie herné akcie
 - **Kontrola asteroidov**: Primárny zdroj bodov založený na dobytej povrchovej ploche
 - **Dlhodobá strategia**: Udržanie kontroly nad veľkými asteroidmi prináša stabilný príjem bodov
+- **Vzorec**: 50 + $1.5^{ownedPct/9)} * a.size/MaxAsteroidSize$ za každý asteroid
 
-## Tip pre vývojárov botov
+## Prehľad konštánt
+```golang
+Radius                          = 15000                   // Game map radius
+MaxAsteroidSize                 = 50                      // Maximum size of generated asteroids
+MinAsteroidSize                 = MaxAsteroidSize / 7 * 5 // Minimum size of generated asteroids
+AsteroidCount                   = 500                     // Number of generated asteroids in the game
+WormholeCount                   = 25                      // Number of generated wormhole pairs in the game
+ShipMaxHealth                   = 100                     // Maximum health points for ships
+ShipStartFuel                   = 100                     // Starting fuel for new ships
+ShipMovementMaxSize             = 10000                   // Maximum movement delta per turn - larger movements are scaled down
+ShipTransferDistance            = 20                      // Maximum distance for resource transfer between ships
+ShipShootDistance               = 500                     // Maximum shooting range for ships
+ShipShootDamage                 = 25                      // Damage dealt by ship weapons
+ShipRepairDistance              = 50                      // Maximum distance for ship repair operations
+ShipRepairAmount                = 30                      // Health points restored by repair
+ShipRepairRockCost              = 15                      // Rock cost per repair operation
+WormholeRadius                  = 5                       // Radius within which ships get teleported by wormholes
+WormholeTeleportDistance        = WormholeRadius * 2      // Minimum distance from target wormhole (2x radius) to prevent teleport loops
+ShipMiningDistance              = MaxAsteroidSize         // Maximum distance for mining operations
+ShipMiningAmount                = 10                      // Units mined per tick
+ShipConqueringDistance          = MaxAsteroidSize         // Maximum distance for conquering operations
+ShipConqueringRate              = 10                      // Surface units conquered/lost per tick
+```
 
-### Základné stratégie
-- **Rozvoj**: Začať s ťažbou a stavbou základných lodí
-- **Logistika**: Efektívne presúvať zdroje medzi loďami
-- **Boj**: Chrániť svoje lode a útočiť na oslabené ciele
-- **Presun**: Využívať červie diery pre strategické manévre
+# What's in the box?
+
+- `observer` - prehrávač hier (`index.html` otvor v prehliadači)
+- `server_linux`, `server_mac`, `server_windows.exe` - program s logikou hry
+- `runner_linux`, `runner_mac`, `runner_windows.exe` - program na spúšťanie hier
+- `player` - kód bota
+- `config.json`, `games.json` - konfiguračné súbory
+
+## Čo odovzdávať?
+
+Stačí zazipovať súbory `player.py` a `proboj.py` **(nie priečinok!)**, prípadne ďalšie, ak si nejaké navyše vytvoril.
