@@ -54,6 +54,8 @@ func ShipMovementFree(t ShipType) float64 {
 
 func ShipMovementMultiplier(t ShipType) float64 {
 	switch t {
+	case MotherShip:
+		return BaseShipMovementMultiplier * 10
 	case TruckShip:
 		fallthrough
 	case TankerShip:
