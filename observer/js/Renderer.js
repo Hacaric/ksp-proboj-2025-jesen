@@ -8,7 +8,9 @@ class Renderer {
         this.dataManager = dataManager;
         this.showGrid = false;
         this.stars = [];
+        this.snowParticles = [];
         this.generateStars();
+        this.generateSnowParticles();
     }
 
     generateStars() {
@@ -23,12 +25,89 @@ class Renderer {
         }
     }
 
+    generateSnowParticles() {
+        this.snowParticles = [];
+        for (let i = 0; i < 150; i++) {
+            this.snowParticles.push({
+                x: Math.random() * this.canvas.width,
+                y: Math.random() * this.canvas.height - this.canvas.height,
+                size: Math.random() * 3 + 1,
+                speed: Math.random() * 1 + 0.5,
+                windSpeed: Math.random() * 0.5 - 0.25,
+                opacity: Math.random() * 0.6 + 0.4
+            });
+        }
+    }
+
+    updateSnowParticles() {
+        this.snowParticles.forEach(particle => {
+            particle.y += particle.speed;
+            particle.x += particle.windSpeed;
+
+            // Reset particle when it goes off screen
+            if (particle.y > this.canvas.height) {
+                particle.y = -10;
+                particle.x = Math.random() * this.canvas.width;
+            }
+
+            // Wrap horizontally
+            if (particle.x > this.canvas.width) {
+                particle.x = 0;
+            } else if (particle.x < 0) {
+                particle.x = this.canvas.width;
+            }
+        });
+    }
+
+    renderSnow() {
+        this.ctx.save();
+        this.snowParticles.forEach(particle => {
+            this.ctx.globalAlpha = particle.opacity;
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.beginPath();
+            this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+            this.ctx.fill();
+        });
+        this.ctx.restore();
+    }
+
+    drawSantaHat(x, y, size) {
+        this.ctx.save();
+
+        // Make everything 2x larger
+        const scaledSize = size * 1.5;
+
+        // Draw red triangle hat (pointing up)
+        this.ctx.fillStyle = '#c41e3a';
+        this.ctx.beginPath();
+        this.ctx.moveTo(x, y - scaledSize * 2.5);  // Top point of hat
+        this.ctx.lineTo(x - scaledSize * 0.7, y - scaledSize * 0.5);  // Bottom left
+        this.ctx.lineTo(x + scaledSize * 0.7, y - scaledSize * 0.5);  // Bottom right
+        this.ctx.closePath();
+        this.ctx.fill();
+
+        // Draw white trim at bottom of hat
+        this.ctx.fillStyle = '#f0f8ff';
+        this.ctx.fillRect(x - scaledSize * 0.8, y - scaledSize * 0.7, scaledSize * 1.6, scaledSize * 0.4);
+
+        // Draw white ball at tip of hat
+        this.ctx.beginPath();
+        this.ctx.arc(x, y - scaledSize * 2.5, scaledSize * 0.3, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        this.ctx.restore();
+    }
+
     toggleGrid() {
         this.showGrid = !this.showGrid;
     }
 
     render() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Update and render snow particles
+        this.updateSnowParticles();
+        this.renderSnow();
 
         // Stars disabled for now
         // this.renderStars();
@@ -45,7 +124,7 @@ class Renderer {
             return;
         }
 
-        
+
         this.renderBoundary();
         this.renderWormholes();
         this.renderAsteroids();
@@ -125,9 +204,10 @@ class Renderer {
 
             if (connected) {
                 const connectedPos = this.camera.worldToScreen(connected.position.x, connected.position.y);
-                this.ctx.strokeStyle = 'rgba(255, 107, 74, 0.5)';
-                this.ctx.lineWidth = 2;
-                this.ctx.setLineDash([5, 5]);
+                // Icy blue connection line
+                this.ctx.strokeStyle = 'rgba(135, 206, 235, 0.6)';
+                this.ctx.lineWidth = 3;
+                this.ctx.setLineDash([8, 4]);
                 this.ctx.beginPath();
                 this.ctx.moveTo(pos.x, pos.y);
                 this.ctx.lineTo(connectedPos.x, connectedPos.y);
@@ -136,17 +216,34 @@ class Renderer {
             }
 
             const radius = 20 * this.camera.zoom;
-            this.ctx.fillStyle = '#ff6b4a';
+            // Icy blue outer ring with glow effect
+            const gradient = this.ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, radius);
+            gradient.addColorStop(0, 'rgba(135, 206, 235, 0.8)');
+            gradient.addColorStop(0.7, 'rgba(173, 216, 230, 0.6)');
+            gradient.addColorStop(1, 'rgba(135, 206, 235, 0.2)');
+
+            this.ctx.fillStyle = gradient;
             this.ctx.beginPath();
             this.ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
             this.ctx.fill();
 
-            this.ctx.fillStyle = '#ffaa4a';
+            // Inner bright core
+            this.ctx.fillStyle = '#f0f8ff';
             this.ctx.beginPath();
             this.ctx.arc(pos.x, pos.y, radius * 0.6, 0, Math.PI * 2);
             this.ctx.fill();
 
-            this.ctx.fillStyle = '#ffffff';
+            // Glowing effect
+            this.ctx.shadowColor = '#87ceeb';
+            this.ctx.shadowBlur = 10 * this.camera.zoom;
+            this.ctx.strokeStyle = 'rgba(240, 248, 255, 0.8)';
+            this.ctx.lineWidth = 2;
+            this.ctx.beginPath();
+            this.ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
+            this.ctx.stroke();
+            this.ctx.shadowBlur = 0;
+
+            this.ctx.fillStyle = '#0a1929';
             this.ctx.font = `${12 * this.camera.zoom}px Arial`;
             this.ctx.textAlign = 'center';
             this.ctx.fillText(wormhole.id.toString(), pos.x, pos.y + 4 * this.camera.zoom);
@@ -162,14 +259,39 @@ class Renderer {
             const pos = this.camera.worldToScreen(asteroid.position.x, asteroid.position.y);
             const radius = asteroid.size * this.camera.zoom;
 
-            this.ctx.fillStyle = asteroid.type === 0 ? '#888888' : '#aaaa88';
+            // Create snowball gradient effect
+            const gradient = this.ctx.createRadialGradient(
+                pos.x - radius * 0.3, pos.y - radius * 0.3, 0,
+                pos.x, pos.y, radius
+            );
+
+            if (asteroid.type === 0) {
+                // Light snowball
+                gradient.addColorStop(0, '#ffffff');
+                gradient.addColorStop(0.7, '#e0f2ff');
+                gradient.addColorStop(1, '#b8d4e3');
+            } else {
+                // Slightly blue-tinted ice chunk
+                gradient.addColorStop(0, '#f0f8ff');
+                gradient.addColorStop(0.7, '#d6e8f7');
+                gradient.addColorStop(1, '#a8c4e0');
+            }
+
+            this.ctx.fillStyle = gradient;
             this.ctx.beginPath();
             this.ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
             this.ctx.fill();
 
-            this.ctx.fillStyle = asteroid.type === 0 ? '#666666' : '#888866';
+            // Add crystalline highlights
+            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
             this.ctx.beginPath();
-            this.ctx.arc(pos.x - radius * 0.3, pos.y - radius * 0.3, radius * 0.3, 0, Math.PI * 2);
+            this.ctx.arc(pos.x - radius * 0.3, pos.y - radius * 0.3, radius * 0.25, 0, Math.PI * 2);
+            this.ctx.fill();
+
+            // Add subtle shadow
+            this.ctx.fillStyle = 'rgba(10, 25, 41, 0.2)';
+            this.ctx.beginPath();
+            this.ctx.arc(pos.x + radius * 0.2, pos.y + radius * 0.2, radius * 0.8, 0, Math.PI * 2);
             this.ctx.fill();
         });
     }
@@ -263,6 +385,23 @@ class Renderer {
 
             this.ctx.restore();
 
+            // Draw Santa hat on all ships (properly scaled and positioned)
+            if (!isDestroyed) {
+                let hatSize, hatY;
+
+                if (isMothership) {
+                    // Large hat for mothership
+                    hatSize = size * 1.2;  // Much larger for mothership
+                    hatY = pos.y - size * 3.5;  // Position well above the large mothership
+                } else {
+                    // Medium-sized hat for regular ships
+                    hatSize = size * 0.6;  // Larger than before for better visibility
+                    hatY = pos.y - size * 1.8;  // Position above the ship triangle
+                }
+
+                this.drawSantaHat(pos.x, hatY, hatSize);
+            }
+
             // Draw player number
             this.ctx.fillStyle = isDestroyed ? '#aaaaaa' : '#ffffff';
             this.ctx.font = `${12 * this.camera.zoom}px Arial`;
@@ -317,12 +456,25 @@ class Renderer {
         this.ctx.closePath();
         this.ctx.fill();
 
-        // Crown/halo indicator
-        this.ctx.strokeStyle = '#ffdd00';
-        this.ctx.lineWidth = 3;
+        // Christmas wreath instead of crown
+        this.ctx.strokeStyle = '#228b22';
+        this.ctx.lineWidth = 4;
         this.ctx.beginPath();
         this.ctx.arc(0, 0, size * 1.2, 0, Math.PI * 2);
         this.ctx.stroke();
+
+        // Add berries to wreath
+        const berryPositions = [0, Math.PI * 0.33, Math.PI * 0.67, Math.PI];
+        this.ctx.fillStyle = '#c41e3a';
+        berryPositions.forEach(angle => {
+            const x = Math.cos(angle) * size * 1.2;
+            const y = Math.sin(angle) * size * 1.2;
+            this.ctx.beginPath();
+            this.ctx.arc(x, y, 3, 0, Math.PI * 2);
+            this.ctx.fill();
+        });
+
+        // Note: Santa hat is now drawn in renderShips method to ensure proper positioning
     }
 
     drawSuckerShip(size) {

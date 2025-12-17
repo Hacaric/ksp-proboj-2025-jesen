@@ -3,20 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Space Game Observer</title>
+    <title>🎅 Winter Space Observer</title>
     <link rel="stylesheet" href="css/observer.css?v=1">
 </head>
 <body>
+    <!-- Christmas Snow Effect -->
+    <div class="snow-container" id="snowContainer"></div>
+
     <!-- File Upload Screen -->
     <div class="upload-container" id="uploadContainer">
         <div class="upload-panel">
-            <h1>🚀 Space Game Observer</h1>
-            <p>Upload a compressed observer file (.gz) to load game data for visualization.</p>
+            <h1>🎅🚀 Winter Space Observer</h1>
+            <p>Upload a compressed observer file (.gz) to load game data for visualization in our winter wonderland!</p>
 
             <div class="upload-area" id="uploadArea">
-                <div class="upload-icon">📁</div>
+                <div class="upload-icon">⛄</div>
                 <div class="upload-text">Drop observer.gz file here</div>
-                <div class="upload-subtext">or click to browse</div>
+                <div class="upload-subtext">or click to browse ❄️</div>
             </div>
 
             <input type="file" id="fileInput" class="file-input" accept=".gz">
@@ -29,11 +32,11 @@
     <!-- Main Observer Interface -->
     <div class="container" id="mainContainer">
         <div class="header">
-            <h1>🚀 Space Game Observer</h1>
+            <h1>🎅🚀 Winter Space Observer</h1>
             <div class="controls">
-                <button class="btn" id="resetView">Reset View</button>
-                <button class="btn" id="toggleGrid">Toggle Grid</button>
-                <button class="btn" id="loadNewFile">Load New File</button>
+                <button class="btn" id="resetView">🔄 Reset View</button>
+                <button class="btn" id="toggleGrid">❄️ Toggle Grid</button>
+                <button class="btn" id="loadNewFile">🛷 Load New File</button>
             </div>
         </div>
 
@@ -335,7 +338,30 @@
         // Initialize the file upload handler when the page loads
         window.addEventListener('load', () => {
             new FileUploadHandler();
+            createSnowfall();
         });
+
+        // Create falling snow effect
+        function createSnowfall() {
+            const snowContainer = document.getElementById('snowContainer');
+            const snowflakes = ['❄️', '❅', '❆', '✻', '✼', '❉'];
+
+            // Create 50 snowflakes
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const snowflake = document.createElement('div');
+                    snowflake.className = 'snowflake';
+                    snowflake.innerHTML = snowflakes[Math.floor(Math.random() * snowflakes.length)];
+                    snowflake.style.left = Math.random() * 100 + '%';
+                    snowflake.style.animationDuration = Math.random() * 3 + 2 + 's';
+                    snowflake.style.opacity = Math.random();
+                    snowflake.style.fontSize = Math.random() * 10 + 10 + 'px';
+                    snowflake.style.animationDelay = Math.random() * 2 + 's';
+
+                    snowContainer.appendChild(snowflake);
+                }, i * 100);
+            }
+        }
     </script>
 </body>
 </html>
