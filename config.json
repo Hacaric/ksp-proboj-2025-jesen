@@ -10,13 +10,18 @@
       "command": "./python/player.py",
       "language": "py"
     },
+    "rust": {
+        "command": "./rust_bot/target/debug/rust_bot",
+        "language": "rs"
+    },
     "windows": {
       "command": "C:/absolutna/cesta/ku/python.exe ../python/player.py",
       "language": "py"
     }
   },
   "timeout": {
-    "py": 10
+    "py": 10,
+    "rs": 1
   },
   "disable_gzip": true
 }

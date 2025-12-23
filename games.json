@@ -3,7 +3,8 @@
     "gamefolder": "game",
     "players": [
       "py1",
-      "py2"
+      "py2",
+      "rust"
     ],
     "args": ""
   }
