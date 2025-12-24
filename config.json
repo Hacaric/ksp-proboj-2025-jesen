@@ -11,8 +11,8 @@
       "language": "py"
     },
     "rust": {
-        "command": "./rust/target/debug/rust_bot",
-        "language": "rs"
+      "command": "./rust/target/debug/rust",
+      "language": "rs"
     },
     "windows": {
       "command": "C:/absolutna/cesta/ku/python.exe ../python/player.py",
