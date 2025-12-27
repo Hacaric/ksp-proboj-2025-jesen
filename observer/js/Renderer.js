@@ -11,6 +11,7 @@ class Renderer {
         this.snowParticles = [];
         this.generateStars();
         this.generateSnowParticles();
+        this.doRenderSnow = true;
     }
 
     generateStars() {
@@ -106,8 +107,10 @@ class Renderer {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         // Update and render snow particles
-        this.updateSnowParticles();
-        this.renderSnow();
+        if (this.doRenderSnow) {
+            this.updateSnowParticles();
+            this.renderSnow();
+        }
 
         // Stars disabled for now
         // this.renderStars();

@@ -35,6 +35,7 @@ class InputHandler {
         // Add event listeners to UI elements if they exist
         this.addButtonListener('resetView', () => this.resetView());
         this.addButtonListener('toggleGrid', () => this.toggleGrid());
+        this.addButtonListener('toogleSnow', () => this.toogleSnow());
         this.addButtonListener('zoomIn', () => this.zoomIn());
         this.addButtonListener('zoomOut', () => this.zoomOut());
 
@@ -186,6 +187,15 @@ class InputHandler {
         this.observer.renderer.toggleGrid();
     }
 
+    toogleSnow() {
+        if (this.observer.renderer.doRenderSnow){
+            this.observer.renderer.doRenderSnow = false;
+            document.getElementById('snowContainer').style.display = "none";
+        } else {
+            this.observer.renderer.doRenderSnow = true;
+            document.getElementById('snowContainer').style.display = "block";
+        }
+    }
     
     zoomIn() {
         this.camera.zoomIn();
