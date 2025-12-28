@@ -363,6 +363,21 @@
                 }, i * 100);
             }
         }
+
+        function focus_player(target_player_id) {
+            target_player_id = target_player_id.toString();
+            const ships = window.gameObserver.dataManager.getGameData().ships;
+            for (const ship of ships) {
+                // console.log("Value: " + ship.player + ", Type:" + typeof(ship.player) + " Is eaqual to? " + target_player_id + "? " + (ship.player.toString() == target_player_id))
+                if ((ship.type == 0) && (ship.player.toString() === target_player_id)) {
+                    window.gameObserver.selectEntityAt(ship.position);
+                    window.gameObserver.camera.targetX = ship.position.x;
+                    window.gameObserver.camera.targetY = ship.position.y;
+                    return;
+                }
+            }
+            console.log("Error focusing player " + target_player_id + ": Mothership not found, type: " + typeof(target_player_id));
+        }
     </script>
 </body>
 </html>

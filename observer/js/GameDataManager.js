@@ -375,7 +375,7 @@ class GameDataManager {
         panel.id = `player${player.id}Info`;
 
         panel.innerHTML = `
-            <h3 class="player-header">${player.name} (${player.id})</h3>
+            <div><h3 class="player-header"><span class="player-name-text">${player.name} (${player.id})</span> <button class="focus_player_button" onclick="focus_player(${player.id})">🎯</button></h3></div>
             <div class="stat-row">
                 <span>Score:</span>
                 <span class="player-score">${player.score || 0}</span>
@@ -400,7 +400,7 @@ class GameDataManager {
     registerPlayerElements(playerId, panel) {
         const elements = {
             panel: panel,
-            header: panel.querySelector('.player-header'),
+            header: panel.querySelector('.player-name-text'),
             score: panel.querySelector('.player-score'),
             rock: panel.querySelector('.player-rock'),
             fuel: panel.querySelector('.player-fuel'),

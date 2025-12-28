@@ -187,6 +187,13 @@ body {
     text-shadow: 0 0 5px rgba(135, 206, 235, 0.3);
 }
 
+.player-info .focus_player_button {
+    cursor: pointer;
+    font-size: 100%;
+    background: none;
+    border: 0px;
+}
+
 .stat-row {
     display: flex;
     justify-content: space-between;
