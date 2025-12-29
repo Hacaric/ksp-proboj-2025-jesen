@@ -41,8 +41,28 @@ class Camera {
     }
 
     update() {
-        this.x += (this.targetX - this.x) * 0.1;
-        this.y += (this.targetY - this.y) * 0.1;
-        this.zoom += (this.targetZoom - this.zoom) * 0.1;
+        let dx = this.targetX - this.x;
+        let dy = this.targetY - this.y;
+        let dz = this.targetZoom - this.zoom;
+
+        if (Math.abs(dx) < 0.01) this.x = this.targetX;
+        else this.x += dx * 0.1;
+
+        if (Math.abs(dy) < 0.01) this.y = this.targetY;
+        else this.y += dy * 0.1;
+
+        if (Math.abs(dz) < 0.0001) this.zoom = this.targetZoom;
+        else this.zoom += dz * 0.1;
+    }
+
+    getDataFootPrint() {
+        return Math.round((
+            this.x + 
+            this.y + 
+            this.targetX + 
+            this.targetY + 
+            this.zoom + 
+            this.targetZoom
+        ) * 100);
     }
 }
