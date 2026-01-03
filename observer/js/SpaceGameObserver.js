@@ -10,7 +10,7 @@ class SpaceGameObserver {
         this.timelineManager = new TimelineManager(this, this.dataManager, redirectUrl);
 
         this.old_camera_footprint = null;
-        this.firstFrame = true;
+        this.oldReplayTime = null;
         this.init();
     }
 
@@ -34,17 +34,19 @@ class SpaceGameObserver {
         let camera_data = this.camera.getDataFootPrint();
         let camera_moved = (camera_data != this.old_camera_footprint);
         this.old_camera_footprint = camera_data
-
-        let should_update = this.firstFrame || (!this.timelineManager.isPaused) || camera_moved;
+        let currentReplayTime = this.dataManager.currentFrame;
+        let replayFrameChanged = currentReplayTime != this.oldReplayTime;
+        this.oldReplayTime = currentReplayTime;
+        
+        let should_update = camera_moved || replayFrameChanged;
         if (should_update){
-            this.renderer.render();
             this.renderer.gameData = this.dataManager.getGameData();
             this.renderer.selectedEntity = this.dataManager.getInterpolatedSelectedEntity();
+            this.renderer.render();
         } else {
             // console.log("Skipping rendering...");
         }
         
-        this.firstFrame = false;
         this.animationFrameId = requestAnimationFrame(() => this.animate());
     }
 }
